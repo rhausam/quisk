@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 #  ** This is the file quisk_conf_defaults.py which contains defaults for Quisk. **
 #  
 # Please do not change this configuration file quisk_conf_defaults.py.
@@ -31,6 +32,8 @@ from __future__ import absolute_import
 # are the four SDR-IQ rates plus 24, 48, 96, 192, 240, 384, 480, and 960 ksps.  Other rates
 # can be added.
 
+from builtins import chr
+from past.utils import old_div
 import sys
 import wx
 
@@ -1364,27 +1367,27 @@ use_unicode_symbols = True
 #use_unicode_symbols = False
 
 # These are the Unicode symbols used in the station window.  Thanks to Christof, DJ4CM.
-Usym_stat_fav = unichr(0x2605)	# Symbol for favorites, a star
-Usym_stat_mem = unichr(0x24C2)	# Symbol for memory stations, an "M" in a circle
+Usym_stat_fav = chr(0x2605)	# Symbol for favorites, a star
+Usym_stat_mem = chr(0x24C2)	# Symbol for memory stations, an "M" in a circle
 #Usym_stat_dx = unichr(0x2691)	# Symbol for DX Cluster stations, a flag
-Usym_stat_dx = unichr(0x25B2)	# Symbol for DX Cluster stations, a Delta
+Usym_stat_dx = chr(0x25B2)	# Symbol for DX Cluster stations, a Delta
 # These are the text symbols used in the station window.
 Tsym_stat_fav = 'F'
 Tsym_stat_mem = 'M'
 Tsym_stat_dx = 'Dx'
 #
 # These are the Unicode symbols to display on buttons.  Thanks to Christof, DJ4CM.
-Ubtn_text_range_dn = unichr(0x2B07)						# Down band, left arrow
-Ubtn_text_range_up = unichr(0x2B06)						# Up band, right arrow
-Ubtn_text_play = unichr(0x25BA)							# Play button
-Ubtn_text_rec = unichr(0x25CF)							# Record button, a filled dot
-Ubtn_text_file_rec = "File " + unichr(0x25CF)           # Record to file
-Ubtn_text_file_play = "File " + unichr(0x25BA)          # Play from file
-Ubtn_text_fav_add    = unichr(0x2605) + unichr(0x2191)  # Add to favorites
-Ubtn_text_fav_recall = unichr(0x2605) + unichr(0x2193)  # Jump to favorites screen
-Ubtn_text_mem_add  = unichr(0x24C2) + unichr(0x2191)    # Add to memory
-Ubtn_text_mem_next = unichr(0x24C2) + unichr(0x27B2)    # Next memory
-Ubtn_text_mem_del  = unichr(0x24C2) + unichr(0x2613)    # Delete from memory
+Ubtn_text_range_dn = chr(0x2B07)						# Down band, left arrow
+Ubtn_text_range_up = chr(0x2B06)						# Up band, right arrow
+Ubtn_text_play = chr(0x25BA)							# Play button
+Ubtn_text_rec = chr(0x25CF)							# Record button, a filled dot
+Ubtn_text_file_rec = "File " + chr(0x25CF)           # Record to file
+Ubtn_text_file_play = "File " + chr(0x25BA)          # Play from file
+Ubtn_text_fav_add    = chr(0x2605) + chr(0x2191)  # Add to favorites
+Ubtn_text_fav_recall = chr(0x2605) + chr(0x2193)  # Jump to favorites screen
+Ubtn_text_mem_add  = chr(0x24C2) + chr(0x2191)    # Add to memory
+Ubtn_text_mem_next = chr(0x24C2) + chr(0x27B2)    # Next memory
+Ubtn_text_mem_del  = chr(0x24C2) + chr(0x2613)    # Delete from memory
 # These are the text symbols to display on buttons.
 Tbtn_text_range_dn = "Dn"
 Tbtn_text_range_up = "Up"
@@ -1403,9 +1406,9 @@ Tbtn_text_mem_del  = "Del"
 decorate_buttons = True
 #decorate_buttons = False
 
-btn_text_cycle = unichr(0x21B7)			# Character to display on multi-push buttons
-btn_text_cycle_small = unichr(0x2193)	# Smaller version when there is little space
-btn_text_switch = unichr(0x21C4)		# Character to switch left-right
+btn_text_cycle = chr(0x21B7)			# Character to display on multi-push buttons
+btn_text_cycle_small = chr(0x2193)	# Smaller version when there is little space
+btn_text_switch = chr(0x21C4)		# Character to switch left-right
 
 ## color_scheme				Color scheme, text choice
 # This controls the color scheme used by Quisk.  The default color scheme is A, and you can change this scheme
@@ -1860,10 +1863,10 @@ bandState = {'Audio':(0, 0, 'LSB'), '2200':( 136000, -10000, 'LSB'),'630':( 4730
       '160':( 1890000, -10000, 'LSB'), '80' :( 3660000, -10000, 'LSB'),
       '60' :( 5370000,   1500, 'USB'), '40' :( 7180000, -5000, 'LSB'),  '30':(10120000, -10000, 'CWL'),
       'Time':( 5000000, 0, 'AM')}
-for band, (f1, f2) in BandEdge.items():
+for band, (f1, f2) in list(BandEdge.items()):
   if f1 > 13500000:
-    f = (f1 + f2) / 2
-    f = (f + 5000) / 10000
+    f = old_div((f1 + f2), 2)
+    f = old_div((f + 5000), 10000)
     f *= 10000
     bandState[band] = (f, 10000, 'USB')
 # Select the method to test the state of the key; see is_key_down.c

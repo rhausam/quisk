@@ -13,7 +13,13 @@ This can also be installed as a package and run as quisk_vna.main().
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys, os
 os.chdir(os.path.normpath(os.path.dirname(__file__)))
 if sys.path[0] != "'.'":		# Make sure the current working directory is on path
@@ -50,12 +56,12 @@ if sys.platform == 'win32':
   else:
     config_dir = os.path.join(path, "My Documents")
   try:
-    import _winreg
-    key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+    import winreg
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
        r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders")
-    val = _winreg.QueryValueEx(key, "Personal")
-    val = _winreg.ExpandEnvironmentStrings(val[0])
-    _winreg.CloseKey(key)
+    val = winreg.QueryValueEx(key, "Personal")
+    val = winreg.ExpandEnvironmentStrings(val[0])
+    winreg.CloseKey(key)
     if os.path.isdir(val):
       DefaultConfigDir = val
     else:
@@ -135,7 +141,7 @@ class GraphDisplay(wx.Window):
     self.Bind(wx.EVT_LEFT_UP, parent.OnLeftUp)
     self.Bind(wx.EVT_MOTION, parent.OnMotion)
     self.Bind(wx.EVT_MOUSEWHEEL, parent.OnWheel)
-    self.tune_tx = graph_width / 2	# Current X position of the Tx tuning line
+    self.tune_tx = old_div(graph_width, 2)	# Current X position of the Tx tuning line
     self.height = 10
     self.y_min = 1000
     self.y_max = 0
@@ -235,7 +241,7 @@ class GraphScreen(wx.Window):
     self.pen_tick = wx.Pen("Black", 1, wx.SOLID)
     self.font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
     self.SetFont(self.font)
-    w = self.GetCharWidth() * 14 / 10
+    w = old_div(self.GetCharWidth() * 14, 10)
     h = self.GetCharHeight()
     self.freq_start = 1000000
     self.freq_stop  = 2000000
@@ -247,12 +253,12 @@ class GraphScreen(wx.Window):
     self.data_impedance = []
     self.data_reflect = []
     self.data_freq = [0] * data_width
-    self.tick = max(2, h * 3 / 10)
+    self.tick = max(2, old_div(h * 3, 10))
     self.originX = w * 5
     self.offsetY = h + self.tick
     self.width = self.originX * 2 + self.graph_width + self.tick
-    self.height = application.screen_height * 3 / 10
-    self.x0 = self.originX + self.graph_width / 2		# center of graph
+    self.height = old_div(application.screen_height * 3, 10)
+    self.x0 = self.originX + old_div(self.graph_width, 2)		# center of graph
     self.originY = 10
     self.num_ticks = 8	# number of Y lines above the X axis
     self.dy_ticks = 10
@@ -305,19 +311,19 @@ class GraphScreen(wx.Window):
     self.Refresh()
   def MakeYScale(self):
     chary = self.chary
-    dy = self.dy_ticks = (self.originY - chary * 2) / self.num_ticks   # pixels per tick
+    dy = self.dy_ticks = old_div((self.originY - chary * 2), self.num_ticks)   # pixels per tick
     ytot = dy * self.num_ticks
     # Voltage dB scale
     dbs = 80	# Number of dB to display
     self.leftZero = self.originY - ytot - chary
-    self.leftSlope = - ytot * 360 / dbs		# pixels per dB times 360
+    self.leftSlope = old_div(- ytot * 360, dbs)		# pixels per dB times 360
     # Phase scale
     self.rightSlope = - ytot			# pixels per degree times 360
-    self.rightZero = self.originY - ytot / 2 - chary
+    self.rightZero = self.originY - old_div(ytot, 2) - chary
     # SWR scale
     swrs = 9		# display range 1.0 to swrs
-    self.swrSlope = - ytot * 360 / (swrs - 1)	# pixels per SWR unit times 360
-    self.swrZero = self.originY - self.swrSlope / 360 - chary
+    self.swrSlope = old_div(- ytot * 360, (swrs - 1))	# pixels per SWR unit times 360
+    self.swrZero = self.originY - old_div(self.swrSlope, 360) - chary
   def MakeYTicks(self, dc):
     charx = self.charx
     chary = self.chary
@@ -334,32 +340,32 @@ class GraphScreen(wx.Window):
     dc.SetTextForeground(self.display.magnPen.GetColour())
     for i in range(self.num_ticks + 1):
       # Create the dB scale
-      val = (y - self.leftZero) * 360 / self.leftSlope
+      val = old_div((y - self.leftZero) * 360, self.leftSlope)
       t = str(val)
       dc.DrawLine(x1, y, x2, y)
       self.display.y_ticks.append(y)
       w, h = dc.GetTextExtent(t)
-      dc.DrawText(t, x1 - w, y - h / 2)
+      dc.DrawText(t, x1 - w, y - old_div(h, 2))
       y += self.dy_ticks
     y = self.leftZero
     dc.SetTextForeground(self.display.phasePen.GetColour())
     for i in range(self.num_ticks + 1):
       # Create the scale on the right
-      val = (y - self.rightZero) * 360 / self.rightSlope
+      val = old_div((y - self.rightZero) * 360, self.rightSlope)
       t = str(val)
       dc.DrawLine(x4, y, x5, y)
       w, h = dc.GetTextExtent(t)
-      dc.DrawText(t, self.width - w - charx, y - h / 2 + 3)	# right text
+      dc.DrawText(t, self.width - w - charx, y - old_div(h, 2) + 3)	# right text
       y += self.dy_ticks
     # Create the SWR scale
     if self.mode == 'Reflection':
       y = self.leftZero
       dc.SetTextForeground(self.display.swrPen.GetColour())
       for i in range(self.num_ticks + 1):
-        val = (y - self.swrZero) * 360 / self.swrSlope
+        val = old_div((y - self.swrZero) * 360, self.swrSlope)
         t = str(val)
         w, h = dc.GetTextExtent(t)
-        dc.DrawText(t, w/2, y - h / 2)
+        dc.DrawText(t, old_div(w,2), y - old_div(h, 2))
         y += self.dy_ticks
   def MakeXTicks(self, dc):
     originY = self.originY
@@ -375,7 +381,7 @@ class GraphScreen(wx.Window):
     sample_rate = int(self.freq_stop - self.freq_start)
     if sample_rate < 12000:
       return
-    VFO = int((self.freq_start + self.freq_stop) / 2)
+    VFO = int(old_div((self.freq_start + self.freq_stop), 2))
     # Draw the band plan colors below the X axis
     x = self.originX
     f = float(x - self.x0) * sample_rate / self.data_width
@@ -406,22 +412,22 @@ class GraphScreen(wx.Window):
     if mant < 0.3:	# label every 10
       tfreq = 10 ** expn
       ltick = tfreq
-      mtick = ltick / 2
-      stick = ltick / 10
+      mtick = old_div(ltick, 2)
+      stick = old_div(ltick, 10)
     elif mant < 0.69:	# label every 20
       tfreq = 2 * 10 ** expn
-      ltick = tfreq / 2
-      mtick = ltick / 2
-      stick = ltick / 10
+      ltick = old_div(tfreq, 2)
+      mtick = old_div(ltick, 2)
+      stick = old_div(ltick, 10)
     else:		# label every 50
       tfreq = 5 * 10 ** expn
       ltick = tfreq
-      mtick = ltick / 5
-      stick = ltick / 10
+      mtick = old_div(ltick, 5)
+      stick = old_div(ltick, 10)
     # Draw the X axis ticks and frequency in kHz
     dc.SetPen(self.pen_tick)
-    freq1 = VFO - sample_rate / 2
-    freq1 = (freq1 / stick) * stick
+    freq1 = VFO - old_div(sample_rate, 2)
+    freq1 = (old_div(freq1, stick)) * stick
     freq2 = freq1 + sample_rate + stick + 1
     y_end = 0
     for f in range (freq1, freq2, stick):
@@ -434,9 +440,9 @@ class GraphScreen(wx.Window):
         else:					# small tick
           dc.DrawLine(x, originY, x, originY + tick0)
         if f % tfreq is 0:		# place frequency label
-          t = str(f/1000)
+          t = str(old_div(f,1000))
           w, h = dc.GetTextExtent(t)
-          dc.DrawText(t, x - w / 2, originY + tick2)
+          dc.DrawText(t, x - old_div(w, 2), originY + tick2)
           y_end = originY + tick2 + h
     if y_end:		# mark the center of the display
       dc.DrawLine(self.x0, y_end, self.x0, application.screen_height)
@@ -469,9 +475,9 @@ class GraphScreen(wx.Window):
       for x in range(self.graph_width):
         self.data_impedance.append(50)
         self.data_reflect.append(0)
-        i = x * self.correct_width / self.data_width
+        i = old_div(x * self.correct_width, self.data_width)
         magn = abs(volts[i])
-        phase = cmath.phase(volts[i]) * 360. / (2.0 * math.pi)
+        phase = old_div(cmath.phase(volts[i]) * 360., (2.0 * math.pi))
         if magn < 1e-6:
           db = -120.0
         else:
@@ -489,7 +495,7 @@ class GraphScreen(wx.Window):
         # Find the frequency for this pixel
         freq = self.data_freq[x]
         # Find the corresponding index into the correction array
-        i = int(freq / delta)
+        i = int(old_div(freq, delta))
         if i >= self.correct_width:
           i = self.correct_width - 1
         Vx = volts[x]
@@ -504,12 +510,12 @@ class GraphScreen(wx.Window):
           VVsh = Vs - S11
           try:
             S12S21 = 2.0 * VVop * VVsh / (VVsh - VVop)
-            S22 = (VVop + VVsh) / (VVop - VVsh)
-            reflect = (Vx - S11) / (S12S21 + S22 * (Vx - S11))
+            S22 = old_div((VVop + VVsh), (VVop - VVsh))
+            reflect = old_div((Vx - S11), (S12S21 + S22 * (Vx - S11)))
             Z = 50.0 * (1.0 + reflect) / (1.0 - reflect)
           except:
             Z = 50E3
-            reflect = (Z - 50) / (Z + 50)
+            reflect = old_div((Z - 50), (Z + 50))
           #print ('Vs Vo Vl', abs(Vs), abs(Vo), abs(Vl), 'S22', abs(S22), 'S1221', abs(S12S21))
         else:
           if application.reflection_open is not None:
@@ -519,15 +525,15 @@ class GraphScreen(wx.Window):
           else:		# Use Short
             correct = - (application.reflection_short[i] + (application.reflection_short[i+1] - application.reflection_short[i]) * dd)
           try:
-            reflect = volts[x] / correct
+            reflect = old_div(volts[x], correct)
             Z = 50.0 * (1.0 + reflect) / (1.0 - reflect)
           except:
             Z = 50E3
-            reflect = (Z - 50) / (Z + 50)
+            reflect = old_div((Z - 50), (Z + 50))
         self.data_reflect.append(reflect)
         self.data_impedance.append(Z)
         magn = abs(reflect)
-        swr = (1.0 + magn) / (1.0 - magn)
+        swr = old_div((1.0 + magn), (1.0 - magn))
         if not 0.999 <= swr <= 99:
           swr = 99.0
         if magn < 1e-6:
@@ -537,7 +543,7 @@ class GraphScreen(wx.Window):
         self.data_mag.append(db)
         y = self.leftZero - int( - db * self.leftSlope / 360.0 + 0.5)
         self.display.line_mag.append((x, y))
-        phase = cmath.phase(reflect) * 360. / (2.0 * math.pi)
+        phase = old_div(cmath.phase(reflect) * 360., (2.0 * math.pi))
         self.data_phase.append(phase)
         y = self.rightZero - int( - phase * self.rightSlope / 360.0 + 0.5)
         y = int(y)
@@ -550,7 +556,7 @@ class GraphScreen(wx.Window):
         # Find the frequency for this pixel
         freq = self.data_freq[x]
         # Find the corresponding index into the correction array
-        i = int(freq / delta)
+        i = int(old_div(freq, delta))
         if i >= self.correct_width:
           i = self.correct_width - 1
         # linear interpolation
@@ -569,7 +575,7 @@ class GraphScreen(wx.Window):
         self.data_mag.append(db)
         y = self.leftZero - int( - db * self.leftSlope / 360.0 + 0.5)
         self.display.line_mag.append((x, y))
-        phase = cmath.phase(trans) * 360. / (2.0 * math.pi)
+        phase = old_div(cmath.phase(trans) * 360., (2.0 * math.pi))
         self.data_phase.append(phase)
         y = self.rightZero - int( - phase * self.rightSlope / 360.0 + 0.5)
         y = int(y)
@@ -616,7 +622,7 @@ class GraphScreen(wx.Window):
       mouse_x, mouse_y = self.GetMousePosition(event)
       self.SetTxFreq(index=mouse_x - self.originX)
   def OnWheel(self, event):
-    tune = self.display.tune_tx + event.GetWheelRotation() / event.GetWheelDelta()
+    tune = self.display.tune_tx + old_div(event.GetWheelRotation(), event.GetWheelDelta())
     self.SetTxFreq(index=tune)
 
 class HelpScreen(wx.html.HtmlWindow):
@@ -653,8 +659,8 @@ class Spacer(wx.Window):
        size=(-1, 6), style = wx.NO_BORDER)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     r, g, b = parent.GetBackgroundColour().Get()
-    dark = (r * 7 / 10, g * 7 / 10, b * 7 / 10)
-    light = (r + (255 - r) * 5 / 10, g + (255 - g) * 5 / 10, b + (255 - b) * 5 / 10)
+    dark = (old_div(r * 7, 10), old_div(g * 7, 10), old_div(b * 7, 10))
+    light = (r + old_div((255 - r) * 5, 10), g + old_div((255 - g) * 5, 10), b + old_div((255 - b) * 5, 10))
     self.dark_pen = wx.Pen(dark, 1, wx.SOLID)
     self.light_pen = wx.Pen(light, 1, wx.SOLID)
     self.width = application.screen_width
@@ -677,7 +683,7 @@ class CalibrateDialog(wx.Dialog):
     self.correct_short = None
     self.correct_load = None
     w, h = app.main_frame.GetSizeTuple()
-    width = w / 2
+    width = old_div(w, 2)
     if app.screen_name == "Reflection":
       title = "Calibrate for Reflection Mode"
       t = ''
@@ -707,7 +713,7 @@ class CalibrateDialog(wx.Dialog):
     y = tab
     txt = wx.StaticText(self, -1, t, pos=(tab, y))
     z, chary = txt.GetSizeTuple()
-    y += chary * 3 / 2
+    y += old_div(chary * 3, 2)
     if app.screen_name == "Reflection":
       t = "To calibrate the VNA for reflection mode, connect the standard Short, Open and Load connectors to the unknown port, and press the button."
       t += "  Reflection mode requires at least an Open or Short calibration, but using all three is highly recommended."
@@ -722,27 +728,27 @@ class CalibrateDialog(wx.Dialog):
     # Calibrate buttons
     t1 = wx.StaticText(self, -1, "Connect the Short connector and press", pos=(tab, y))
     tw, th = t1.GetSizeTuple()
-    bx = tab + tw + tab / 2
+    bx = tab + tw + old_div(tab, 2)
     b1 = wx.lib.buttons.GenButton(self, -1, '  Short  ')
     self.Bind(wx.EVT_BUTTON, self.OnBtnShort, b1)
     bw, bh = b1.GetSizeTuple()
-    by = y + (th - bh) / 2
+    by = y + old_div((th - bh), 2)
     b1.MoveXY(bx, by)
-    self.txt_short = wx.StaticText(self, -1, "Not done", pos=(bx + bw + tab / 2, y))
-    y = by + bh * 15 / 10
-    by = y + (th - bh) / 2
+    self.txt_short = wx.StaticText(self, -1, "Not done", pos=(bx + bw + old_div(tab, 2), y))
+    y = by + old_div(bh * 15, 10)
+    by = y + old_div((th - bh), 2)
     t2 = wx.StaticText(self, -1, "Connect the Open connector and press", pos=(tab, y), size = (tw, th))
     b2 = wx.lib.buttons.GenButton(self, -1, 'Open', pos = (bx, by), size = (bw, bh))
     self.Bind(wx.EVT_BUTTON, self.OnBtnOpen, b2)
-    self.txt_open = wx.StaticText(self, -1, "Not done", pos=(bx + bw + tab / 2, y))
-    y = by + bh * 15 / 10
-    by = y + (th - bh) / 2
+    self.txt_open = wx.StaticText(self, -1, "Not done", pos=(bx + bw + old_div(tab, 2), y))
+    y = by + old_div(bh * 15, 10)
+    by = y + old_div((th - bh), 2)
     if app.screen_name == "Reflection":
       t3 = wx.StaticText(self, -1, "Connect the Load connector and press", pos=(tab, y), size = (tw, th))
       b3 = wx.lib.buttons.GenButton(self, -1, 'Load', pos = (bx, by), size = (bw, bh))
       self.Bind(wx.EVT_BUTTON, self.OnBtnLoad, b3)
-      self.txt_load = wx.StaticText(self, -1, "Not done", pos=(bx + bw + tab / 2, y))
-      y = by + bh * 15 / 10
+      self.txt_load = wx.StaticText(self, -1, "Not done", pos=(bx + bw + old_div(tab, 2), y))
+      y = by + old_div(bh * 15, 10)
     # Calibrate buttons
     b1 = wx.lib.buttons.GenButton(self, -1, '  Calibrate  ')
     b1.Enable(False)
@@ -750,10 +756,10 @@ class CalibrateDialog(wx.Dialog):
     b2 = wx.lib.buttons.GenButton(self, -1, 'Cancel', size=(w, h))
     self.Bind(wx.EVT_BUTTON, self.OnBtnCalibrate, b1)
     self.Bind(wx.EVT_BUTTON, self.OnBtnCancel, b2)
-    ww = (width - w * 2 - 40) / 3
+    ww = old_div((width - w * 2 - 40), 3)
     b1.MoveXY(ww, y)
     b2.MoveXY(width - w - ww, y)
-    y += h * 3 / 2
+    y += old_div(h * 3, 2)
     self.SetClientSizeWH(width, y)
     self.btns = [b1, b2]
     # timer
@@ -850,7 +856,7 @@ class App(wx.App):
       exec(compile(open(ConfigPath).read(), ConfigPath, 'exec'), d)		# execute the user's config file
       if os.path.isfile(ConfigPath2):	# See if the user has a second config file
         exec(compile(open(ConfigPath2).read(), ConfigPath2, 'exec'), d)	# execute the user's second config file
-      for k, v in d.items():		# add user's config items to conf
+      for k, v in list(d.items()):		# add user's config items to conf
         if k[0] != '_':				# omit items starting with '_'
           setattr(conf, k, v)
     else:
@@ -918,7 +924,7 @@ class App(wx.App):
     # correct_delta is the spacing of correction points in Hertz
     self.correct_delta = 15000
     self.max_freq = 60000000	# maximum calculation frequency
-    self.correct_width = self.max_freq / self.correct_delta + 4		# number of data points in the correct arrays
+    self.correct_width = old_div(self.max_freq, self.correct_delta) + 4		# number of data points in the correct arrays
     # Find the data width, the width of returned graph data.
     width = self.screen_width * conf.graph_width
     width = int(width)
@@ -931,7 +937,7 @@ class App(wx.App):
       fp = open(self.init_path, "rb")
       d = pickle.load(fp)
       fp.close()
-      for k, v in d.items():
+      for k, v in list(d.items()):
         if k in self.StateNames:
           setattr(self, k, v)
     except:
@@ -948,7 +954,7 @@ class App(wx.App):
     self.graph = GraphScreen(frame, self.data_width, self.data_width, self.correct_width, self.correct_delta)
     self.screen = self.graph
     width = self.graph.width
-    self.help_screen = HelpScreen(frame, width, self.screen_height / 10)
+    self.help_screen = HelpScreen(frame, width, old_div(self.screen_height, 10))
     self.help_screen.Hide()
     # Make a vertical box to hold all the screens and the bottom rows
     vertBox = self.vertBox = wx.BoxSizer(wx.VERTICAL)
@@ -980,7 +986,7 @@ class App(wx.App):
       font = wx.Font(i, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
       frame.SetFont(font)
       w, h = frame.GetTextExtent('Start   ')
-      if h < height * 9 / 10:
+      if h < old_div(height * 9, 10):
         break
     for b in buttons1:
       b.SetMinSize((width, height))
@@ -988,7 +994,7 @@ class App(wx.App):
     t = wx.lib.stattext.GenStaticText(frame, -1, 'Start  ')
     t.SetFont(font)
     t.SetBackgroundColour(conf.color_bg)
-    gap = max(2, height/8)
+    gap = max(2, old_div(height,8))
     freq0 = t
     e = wx.TextCtrl(frame, -1, '1', style=wx.TE_PROCESS_ENTER)
     e.SetFont(font)
@@ -1012,7 +1018,7 @@ class App(wx.App):
     # Band buttons
     ilst = []
     slst = []
-    for l in conf.BandEdge.keys():	# Sort keys
+    for l in list(conf.BandEdge.keys()):	# Sort keys
       if not (l in conf.bandLabels or l == '60'):
         continue
       try:
@@ -1034,8 +1040,8 @@ class App(wx.App):
     # make a list of all buttons
     self.buttons = buttons1 + band
     # Add button row to sizer
-    gap = max(2, height / 8)
-    gap2 = max(2, height / 4)
+    gap = max(2, old_div(height, 8))
+    gap2 = max(2, old_div(height, 4))
     szr1.Add(buttons1[0], 0, wx.RIGHT|wx.LEFT, gap)
     szr1.Add(buttons1[1], 0, wx.RIGHT, gap)
     szr1.Add(buttons1[2], 0, wx.RIGHT, gap)
@@ -1050,7 +1056,7 @@ class App(wx.App):
     self.statusbar = self.main_frame.CreateStatusBar()
     self.status_error = "No hardware response"	# possible error messages
     # Set top window size
-    self.main_frame.SetClientSizeWH(self.graph.width, self.screen_height * 5 / 10)
+    self.main_frame.SetClientSizeWH(self.graph.width, old_div(self.screen_height * 5, 10))
     w, h = self.main_frame.GetSizeTuple()
     self.main_frame.SetSizeHints(w, 1, w)
     if hasattr(Hardware, 'pre_open'):       # pre_open() is called before open()
@@ -1272,13 +1278,13 @@ class App(wx.App):
       db = self.graph.data_mag[index]
       phase = self.graph.data_phase[index]
       aref = abs(self.graph.data_reflect[index])
-      swr = (1.0 + aref) / (1.0 - aref)
+      swr = old_div((1.0 + aref), (1.0 - aref))
       if not 0.999 <= swr <= 99:
         swr = 99.0
       text = u"   %s    %s     Reflect  ( %.2f dB   %.1f\u00B0 )  SWR %.1f" % (self.reflection_cal, freq, db, phase, swr)
       Z = self.graph.data_impedance[index]
       mag = abs(Z)
-      phase = cmath.phase(Z) * 360. / (2.0 * math.pi)
+      phase = old_div(cmath.phase(Z) * 360., (2.0 * math.pi))
       freq = self.graph.data_freq[index]
       z_real = Z.real
       z_imag = Z.imag
@@ -1287,20 +1293,20 @@ class App(wx.App):
       else:
         text += u"     Z \u03A9 ( %.1f + %.1fJ ) = ( %.1f  %.1f\u00B0 )" % (z_real, z_imag, mag, phase)
       if z_imag >= 0.5:
-        L = z_imag / (2.0 * math.pi * freq) * 1e9
-        Xp = (z_imag ** 2 + z_real ** 2) / z_imag
-        Lp = Xp / (2.0 * math.pi * freq) * 1e9
+        L = old_div(z_imag, (2.0 * math.pi * freq) * 1e9)
+        Xp = old_div((z_imag ** 2 + z_real ** 2), z_imag)
+        Lp = old_div(Xp, (2.0 * math.pi * freq) * 1e9)
         text += '     L %.0f nH' % L
         if z_real > 0.01:
-          Rp = (z_imag ** 2 + z_real ** 2) / z_real
+          Rp = old_div((z_imag ** 2 + z_real ** 2), z_real)
           text += "  ( %.1f || %.0f nH )" % (Rp, Lp)
       elif z_imag < -0.5:
-        C = -1.0 / (2.0 * math.pi * freq * z_imag) * 1e9
-        Xp = (z_imag ** 2 + z_real ** 2) / z_imag
-        Cp = -1.0 / (2.0 * math.pi * freq * Xp) * 1e9
+        C = old_div(-1.0, (2.0 * math.pi * freq * z_imag) * 1e9)
+        Xp = old_div((z_imag ** 2 + z_real ** 2), z_imag)
+        Cp = old_div(-1.0, (2.0 * math.pi * freq * Xp) * 1e9)
         text += '     C %.3f nF' % C
         if z_real > 0.01:
-          Rp = (z_imag ** 2 + z_real ** 2) / z_real
+          Rp = old_div((z_imag ** 2 + z_real ** 2), z_real)
           text += "  ( %.1f || %.3f nF )" % (Rp, Cp)
     self.statusbar.SetStatusText(text)
   def PostStartup(self):	# called once after sound attempts to start

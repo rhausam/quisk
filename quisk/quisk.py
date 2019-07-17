@@ -13,10 +13,18 @@ This can also be installed as a package and run as quisk.main().
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages
 # and to load other extension modules that link against _quisk.so.  It also helps to
 # find ./__init__.py and ./help.html.
+from future import standard_library
+standard_library.install_aliases()
+from builtins import chr
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import sys, os
 os.chdir(os.path.normpath(os.path.dirname(__file__)))
 if sys.path[0] != "'.'":		# Make sure the current working directory is on path
@@ -31,7 +39,7 @@ import threading, pickle, webbrowser
 if sys.version_info[0] == 3:	# Python3
   from xmlrpc.client import ServerProxy
 else:				# Python version 2.x
-  from xmlrpclib import ServerProxy
+  from xmlrpc.client import ServerProxy
 from . import _quisk as QS
 from types import *
 from .quisk_widgets import *
@@ -71,12 +79,12 @@ if sys.platform == 'win32':
   else:
     config_dir = os.path.join(path, "My Documents")
   try:
-    import _winreg
-    key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+    import winreg
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
        r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders")
-    val = _winreg.QueryValueEx(key, "Personal")
-    val = _winreg.ExpandEnvironmentStrings(val[0])
-    _winreg.CloseKey(key)
+    val = winreg.QueryValueEx(key, "Personal")
+    val = winreg.ExpandEnvironmentStrings(val[0])
+    winreg.CloseKey(key)
     if os.path.isdir(val):
       DefaultConfigDir = val
     else:
@@ -119,7 +127,7 @@ def str2freq (freq):
     freq = int(freq)
   return freq    
 
-class Timer:
+class Timer(object):
   """Debug: measure and print times every ptime seconds.
 
   Call with msg == '' to start timer, then with a msg to record the time.
@@ -170,7 +178,7 @@ class Timer:
 
 ## T = Timer()		# Make a timer instance
 
-class HamlibHandler:
+class HamlibHandler(object):
   """This class is created for each connection to the server.  It services requests from each client"""
   SingleLetters = {		# convert single-letter commands to long commands
     '_':'info',
@@ -1106,7 +1114,7 @@ class ConfigFavorites(wx.grid.Grid):
         traceback.print_exc()
       else:
         freq = int(freq * 1E6 + 0.5)	# frequency in Hertz
-        freq = (freq + 500) / 1000		# frequency in units of 1 kHz
+        freq = old_div((freq + 500), 1000)		# frequency in units of 1 kHz
         self.RepeaterDict[freq * 1000] = (offset, tone)
   def OnChange(self, event=None):
     self.MakeRepeaterDict()
@@ -1207,7 +1215,7 @@ class ConfigTxAudio(wx.ScrolledWindow):
       QS.set_record_state(3)
       self.tmp_playing = False
 
-class FilterDisplay():
+class FilterDisplay(object):
   def __init__(self, graph_width):
     # This code displays the filter bandwidth on the graph screen.  It is based on code
     # provided by Terry Fox, WB4JFI.  Thanks Terry!
@@ -1558,17 +1566,17 @@ class GraphScreen(wx.Window):
     while tfreq is None:
       if df < s2:
         tfreq = s2
-        stick = s2 / 10
-        mtick = s2 / 2
+        stick = old_div(s2, 10)
+        mtick = old_div(s2, 2)
         ltick = tfreq
       elif df < s2 * 2:
         tfreq = s2 * 2
-        stick = s2 / 10
-        mtick = s2 / 2
+        stick = old_div(s2, 10)
+        mtick = old_div(s2, 2)
         ltick = s2
       elif df < s2 * 5:
         tfreq = s2 * 5
-        stick = s2 / 2
+        stick = old_div(s2, 2)
         mtick = s2
         ltick = tfreq
       s2 *= 10
@@ -1698,7 +1706,7 @@ class GraphScreen(wx.Window):
         speed = max(10, self.originY - mouse_y) / float(self.originY + 1)
         x = (mouse_x - self.mouse_x)
         self.mouse_x = mouse_x
-        freq = speed * x * sample_rate / self.data_width
+        freq = old_div(speed * x * sample_rate, self.data_width)
         freq = int(freq)
         if self.mouse_is_rx:	# Mouse motion changes the receive frequency
           application.rxFreq += freq
@@ -2033,7 +2041,7 @@ class WaterfallDisplay(wx.Window):
     row = ''		# Make a new row of pixels for a one-line image
     gain = self.rf_gain
     for x in data:	# x is -130 to 0, or so (dB)
-      l = int((x - gain + y_zero // 3 + 100) * y_scale / 10)
+      l = int(old_div((x - gain + y_zero // 3 + 100) * y_scale, 10))
       l = max(l, 0)
       l = min(l, 255)
       row = row + "%c%c%c%c" % (chr(self.red[l]), chr(self.green[l]), chr(self.blue[l]), chr(255))
@@ -2364,18 +2372,18 @@ class MultiRxGraph(GraphScreen):
     mode = self.mode
     if mode in ("CWL", "CWU"):
       center = max(conf.cwTone, self.filter_bandwidth // 2)
-      frate = 48000 / 8;
+      frate = old_div(48000, 8);
     elif mode in ('LSB', 'USB'):
       center = 300 + self.filter_bandwidth // 2
-      frate = 48000 / 4;
+      frate = old_div(48000, 4);
     elif mode == 'AM':
       center = 0
-      frate = 48000 / 2;
+      frate = old_div(48000, 2);
     elif mode in ('FM', 'DGT-FM'):
       center = 0
-      frate = 48000 / 2;
+      frate = old_div(48000, 2);
     elif mode in ('DGT-U', 'DGT-L'):
-      center = 300 + self.filter_bandwidth / 2
+      center = 300 + old_div(self.filter_bandwidth, 2)
       frate = 48000;
     elif mode == 'DGT-IQ':
       center = 0
@@ -2722,7 +2730,7 @@ class ScopeScreen(wx.Window):
           re = int(cpx.real)
           im = int(cpx.imag)
           ab = int(abs(cpx))
-          ph = math.atan2(im, re) * 360. / (2.0 * math.pi)
+          ph = old_div(math.atan2(im, re) * 360., (2.0 * math.pi))
           self.fpout.write("%12d %12d %12d %12.1d\n" % (re, im, ab, ph))
       return		# Preserve data on screen
     line = []
@@ -2940,15 +2948,15 @@ class QAdjustPhase(wx.Frame):
     self.phase1.Bind(wx.EVT_SCROLL, self.OnChange)
     self.phase2.Bind(wx.EVT_SCROLL, self.OnPhase2)
   def PosAmpl(self, ampl):	# set pos1, pos2 for amplitude
-    pos2 = round(ampl / self.ampl_scale)
+    pos2 = round(old_div(ampl, self.ampl_scale))
     remain = ampl - pos2 * self.ampl_scale
-    pos1 = round(remain / self.ampl_scale * 50.0)
+    pos1 = round(old_div(remain, self.ampl_scale * 50.0))
     self.ampl1.SetValue(pos1)
     self.ampl2.SetValue(pos2)
   def PosPhase(self, phase):	# set pos1, pos2 for phase
-    pos2 = round(phase / self.phase_scale)
+    pos2 = round(old_div(phase, self.phase_scale))
     remain = phase - pos2 * self.phase_scale
-    pos1 = round(remain / self.phase_scale * 50.0)
+    pos1 = round(old_div(remain, self.phase_scale * 50.0))
     self.phase1.SetValue(pos1)
     self.phase2.SetValue(pos2)
   def OnChange(self, event):
@@ -3069,7 +3077,7 @@ class App(wx.App):
       exec(compile(open(ConfigPath).read(), ConfigPath, 'exec'), d)		# execute the user's config file
       if os.path.isfile(ConfigPath2):	# See if the user has a second config file
         exec(compile(open(ConfigPath2).read(), ConfigPath2, 'exec'), d)	# execute the user's second config file
-      for k, v in d.items():		# add user's config items to conf
+      for k, v in list(d.items()):		# add user's config items to conf
         if k[0] != '_':				# omit items starting with '_'
           setattr(conf, k, v)
     else:
@@ -3238,7 +3246,7 @@ class App(wx.App):
         fp = open(self.init_path, "rb")
         d = pickle.load(fp)
         fp.close()
-        for k, v in d.items():
+        for k, v in list(d.items()):
           if k in self.StateNames:
             self.savedState[k] = v
             if k == 'bandState':
@@ -3249,14 +3257,14 @@ class App(wx.App):
               setattr(self, k, v)
       except:
         pass #traceback.print_exc()
-      for k, (vfo, tune, mode) in self.bandState.items():	# Historical: fix bad frequencies
+      for k, (vfo, tune, mode) in list(self.bandState.items()):	# Historical: fix bad frequencies
         try:
           f1, f2 = conf.BandEdge[k]
           if not f1 <= vfo + tune <= f2:
             self.bandState[k] = conf.bandState[k]
         except KeyError:
           pass
-    if self.bandAmplPhase and type(self.bandAmplPhase.values()[0]) is not DictType:
+    if self.bandAmplPhase and type(list(self.bandAmplPhase.values())[0]) is not DictType:
       print("""Old sound card amplitude and phase corrections must be re-entered (sorry).
 The new code supports multiple corrections per band.""")
       self.bandAmplPhase = {}
@@ -3319,7 +3327,7 @@ The new code supports multiple corrections per band.""")
       del graph
       if self.graph_width % 2 == 1:		# Both data_width and graph_width are even numbers
         self.graph_width -= 1
-      width = int(self.graph_width / conf.display_fraction)		# estimated data width
+      width = int(old_div(self.graph_width, conf.display_fraction))		# estimated data width
       for x in fftPreferedSizes:
         if x >= width:
           self.data_width = x
@@ -3349,17 +3357,17 @@ The new code supports multiple corrections per band.""")
       average_count = 1
     elif conf.fft_size_multiplier > 0:		# Specified fft_size_multiplier
       fft_mult = conf.fft_size_multiplier
-      average_count = int(factor / fft_mult + 0.5)
+      average_count = int(old_div(factor, fft_mult) + 0.5)
       if average_count < 1:
         average_count = 1
     elif var_rate1 is None:		# Calculate an equal split between fft size and average
       fft_mult = 1
       for mult in (32, 27, 24, 18, 16, 12, 9, 8, 6, 4, 3, 2, 1):	# product of small factors
-        average_count = int(factor / mult + 0.5)
+        average_count = int(old_div(factor, mult) + 0.5)
         if average_count >= mult:
           fft_mult = mult
           break
-      average_count = int(factor / fft_mult + 0.5)
+      average_count = int(old_div(factor, fft_mult) + 0.5)
       if average_count < 1:
         average_count = 1
     else:		# Calculate a compromise for variable rates
@@ -3370,7 +3378,7 @@ The new code supports multiple corrections per band.""")
         fft_mult = 4
       elif fft_mult == 7:
         fft_mult = 6
-      average_count = int(factor / fft_mult + 0.5)
+      average_count = int(old_div(factor, fft_mult) + 0.5)
       if average_count < 1:
         average_count = 1
     self.fft_size = self.data_width * fft_mult
@@ -4033,7 +4041,7 @@ The new code supports multiple corrections per band.""")
     x = QS.get_smeter()
     self.smeter_db_sum += x		# sum for average
     if self.timer - self.smeter_db_time0 > self.smeter_avg_seconds:		# average time reached
-      self.smeter_db = self.smeter_db_sum / self.smeter_db_count
+      self.smeter_db = old_div(self.smeter_db_sum, self.smeter_db_count)
       self.smeter_db_count = self.smeter_db_sum = 0 
       self.smeter_db_time0 = self.timer
     if self.smeter_sunits < x:		# S-meter moves to peak value
@@ -4078,7 +4086,7 @@ The new code supports multiple corrections per band.""")
         if N > 1000:
           N = 1000
         N = (N // 2) * 2 + 1
-      K = bw * N / rate
+      K = old_div(bw * N, rate)
       filtD = []
       pi = math.pi
       sin = math.sin
@@ -4088,7 +4096,7 @@ The new code supports multiple corrections per band.""")
         if k == 0:
           z = float(K) / N
         else:
-          z = 1.0 / N * sin(pi * k * K / N) / sin(pi * k / N)
+          z = 1.0 / N * sin(old_div(pi * k * K, N)) / sin(old_div(pi * k, N))
         # Apply a windowing function
         if 1:	# Blackman window
           w = 0.42 + 0.5 * cos(2. * pi * k / N) + 0.08 * cos(4. * pi * k / N)
@@ -4105,7 +4113,7 @@ The new code supports multiple corrections per band.""")
       # Make two quadrature filters.
       filtI = []
       filtQ = []
-      tune = -1j * 2.0 * math.pi * center / rate;
+      tune = old_div(-1j * 2.0 * math.pi * center, rate);
       NN = len(filtD)
       D = (NN - 1.0) / 2.0;
       for i in range(NN):
@@ -4177,7 +4185,7 @@ The new code supports multiple corrections per band.""")
     elif mode in ('DGT-U', 'DGT-L'):
       self.modeFilter['DGT'] = index
       bw = min(bw, 21000)
-      center = 300 + bw / 2
+      center = 300 + old_div(bw, 2)
     elif mode in ('DGT-IQ', 'DGT-FM'):
       self.modeFilter['DGT'] = index
       bw = min(bw, 21000)
@@ -4189,7 +4197,7 @@ The new code supports multiple corrections per band.""")
     else:
       self.modeFilter[mode] = index
       bw = min(bw, 5000)
-      center = 300 + bw / 2
+      center = 300 + old_div(bw, 2)
     self.filter_bandwidth = bw
     self.UpdateFilterDisplay()
     frate = QS.get_filter_rate()
@@ -4219,7 +4227,7 @@ The new code supports multiple corrections per band.""")
     mode = QS.freedv_set_options(mode=index)
     if mode != index:		# change to new mode failed
       self.freedv_menu_items[mode].Check(1)
-      pos = (self.width/2, self.height/2)
+      pos = (old_div(self.width,2), old_div(self.height,2))
       dlg = wx.MessageDialog(self.main_frame, "No codec2 support for mode " + text, "FreeDV Modes", wx.OK, pos)
       dlg.ShowModal()
   def OnBtnHelp(self, event):
@@ -4289,7 +4297,7 @@ The new code supports multiple corrections per band.""")
       self.zooming = False
     else:
       a = 1000.0 * self.sample_rate / (self.sample_rate - 2500.0)
-      self.zoom = 1.0 - x / a
+      self.zoom = 1.0 - old_div(x, a)
       if not self.zooming:
         self.zoom_deltaf = self.txFreq		# set deltaf when zoom mode starts
         self.zooming = True
@@ -4405,7 +4413,7 @@ The new code supports multiple corrections per band.""")
     self.volumeAudio = value
     # Simulate log taper pot
     B = 50.0		# This controls the gain at mid-volume
-    x = (B ** (value/1000.0) - 1.0) / (B - 1.0)		# x is 0.0 to 1.0
+    x = old_div((B ** (value/1000.0) - 1.0), (B - 1.0))		# x is 0.0 to 1.0
     #print ("Vol %3d   %10.6f" % (value, x))
     self.audio_volume = x	# audio_volume is 0 to 1.000
     QS.set_volume(x)
@@ -4415,7 +4423,7 @@ The new code supports multiple corrections per band.""")
     self.sidetone_volume = value
     # Simulate log taper pot
     B = 50.0		# This controls the gain at mid-volume
-    x = (B ** (value/1000.0) - 1.0) / (B - 1.0)		# x is 0.0 to 1.0
+    x = old_div((B ** (value/1000.0) - 1.0), (B - 1.0))		# x is 0.0 to 1.0
     self.sidetone_0to1 = x
     QS.set_sidetone(value, x, self.ritFreq, conf.keyupDelay)
     if hasattr(Hardware, 'ChangeSidetone'):
@@ -4908,7 +4916,7 @@ The new code supports multiple corrections per band.""")
     if f1 <= self.VFO + self.txFreq <= f2:
       self.bandState[self.lastBand] = (self.VFO, self.txFreq, self.mode)
     # Change to the correct band based on frequency.
-    for band, (f1, f2) in conf.BandEdge.items():
+    for band, (f1, f2) in list(conf.BandEdge.items()):
       if f1 <= frequency <= f2:
         self.lastBand = band
         self.bandBtnGroup.SetLabel(band, do_cmd=False)
@@ -5015,8 +5023,8 @@ The new code supports multiple corrections per band.""")
     d1 = self.VFO - lst[i1][0]		# linear interpolation
     d2 = lst[i2][0] - self.VFO
     dx = d1 + d2
-    ampl = (d1 * lst[i2][2] + d2 * lst[i1][2]) / dx
-    phas = (d1 * lst[i2][3] + d2 * lst[i1][3]) / dx
+    ampl = old_div((d1 * lst[i2][2] + d2 * lst[i1][2]), dx)
+    phas = old_div((d1 * lst[i2][3] + d2 * lst[i1][3]), dx)
     return ampl, phas
   def PostStartup(self):	# called once after sound attempts to start
     self.config_screen.OnGraphData(None)	# update config in case sound is not running
@@ -5112,7 +5120,7 @@ The new code supports multiple corrections per band.""")
       if hold == 2:	# Tx is being held for an FM repeater TX frequency shift
         rdict = self.config_screen.favorites.RepeaterDict
         freq = self.txFreq + self.VFO
-        freq = ((freq + 500) / 1000) * 1000
+        freq = (old_div((freq + 500), 1000)) * 1000
         if freq in rdict:
           offset, tone = rdict[freq]
           QS.set_ctcss(tone)

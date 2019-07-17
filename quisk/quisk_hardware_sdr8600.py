@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 # Please do not change this hardware control module for Quisk.  Instead copy
 # it to your own quisk_hardware.py and make changes there.
 # See quisk_hardware_model.py for documentation.
@@ -10,6 +11,7 @@ from __future__ import absolute_import
 #        no matter what the step size, even though the display reads a
 #        different frequency.
 
+from past.utils import old_div
 import time
 from . import _quisk as QS
 from .sdriqpkg import sdriq
@@ -47,7 +49,7 @@ class Hardware(BaseHardware):
       self.serial.close()
       self.serial = None
   def ChangeFrequency(self, rx_freq, vfo_freq, source='', band='', event=None):
-    vfo_freq = (vfo_freq + 5000) / 10000 * 10000		# round frequency
+    vfo_freq = old_div((vfo_freq + 5000), 10000 * 10000)		# round frequency
     if vfo_freq != self.vfo_frequency and vfo_freq >= 100000:
       self.vfo_frequency = vfo_freq
       self.SendAR8600('RF%010d\r' % vfo_freq)

@@ -1,6 +1,12 @@
 from __future__ import absolute_import
+from __future__ import division
 # These are Quisk widgets
 
+from builtins import chr
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import sys, re
 import wx, wx.lib.buttons, wx.lib.stattext
 from types import *
@@ -145,7 +151,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
     width, height = self.GetClientSizeTuple()
     text = self.GetLabel()
     tw, th = self.GetTextExtent(text)
-    edge = (width - tw) / 2
+    edge = old_div((width - tw), 2)
     digit = self.GetTextExtent('0')[0]
     blank = self.GetTextExtent(' ')[0]
     if mouse_x < edge - digit:
@@ -160,7 +166,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
       x -= digit * 3 + blank
     if x < 0:
       return None
-    return x / digit + shift * 3	# index of digit being changed
+    return old_div(x, digit) + shift * 3	# index of digit being changed
   def OnLeftDown(self, event):		# Click on a digit changes the frequency
     if self.repeat_time:
       self.timer.Stop()
@@ -170,7 +176,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
       self.index = index
       mouse_x, mouse_y = event.GetPosition()
       width, height = self.GetClientSizeTuple()
-      if mouse_y < height / 2:
+      if mouse_y < old_div(height, 2):
         self.increase = True
       else:
         self.increase = False
@@ -209,7 +215,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
         self.increase = False
       self.ChangeFreq()
 
-class SliderBoxH:
+class SliderBoxH(object):
   """A horizontal control with a slider and text with a value.  The text must have a %d or %f if display is True."""
   def __init__(self, parent, text, init, themin, themax, handler, display, pos, width, scale=1):
     self.text = text
@@ -362,7 +368,7 @@ class _QuiskText1(wx.lib.stattext.GenStaticText):
     if style & wx.ALIGN_RIGHT:
       x = width - w - 4
     elif style & wx.ALIGN_CENTER:
-      x = (width - w - 1)/2
+      x = old_div((width - w - 1),2)
     else:
       x = 3
     dc.DrawText(label, x, y)
@@ -385,7 +391,7 @@ class QuiskText(wx.BoxSizer):
 # GetValue(self), SetValue(self, value):	Get / Set check button state True / False
 # SetIndex(self, index):	For cycle buttons, set the label from its index
 
-class QuiskButtons:
+class QuiskButtons(object):
   """Base class for special buttons."""
   def InitButtons(self, text, text_color=None):
     if text_color:
@@ -412,10 +418,10 @@ class QuiskButtons:
       tw, th = dc.GetTextExtent(label)
       self.label_width = tw
       dx = dy = self.labelDelta
-      slabel = re.split('('+unichr(0x25CF)+')', label)	# unicode symbol for record: a filled dot
+      slabel = re.split('('+chr(0x25CF)+')', label)	# unicode symbol for record: a filled dot
       for part in slabel:		# This code makes the symbol red.  Thanks to Christof, DJ4CM.
         if self.IsEnabled():
-          if part == unichr(0x25CF):
+          if part == chr(0x25CF):
             dc.SetTextForeground('red')
           else:
             dc.SetTextForeground(self.text_color)
@@ -627,7 +633,7 @@ class QFilterButtonWindow(wx.Frame):
     except ValueError:
       index = 0
       self.wrap.button.slider_value = self.valuelist[0]
-    self.slider = wx.Slider(self, -1, index, 0, 100, (0, 0), (w/2, height), wx.SL_VERTICAL|wx.SL_INVERSE)
+    self.slider = wx.Slider(self, -1, index, 0, 100, (0, 0), (old_div(w,2), height), wx.SL_VERTICAL|wx.SL_INVERSE)
     self.slider.Bind(wx.EVT_SCROLL, self.OnSlider)
     self.SetTitle("%d" % self.valuelist[index])
     self.Show()
@@ -663,7 +669,7 @@ class QSliderButtonWindow(wx.Frame):
     self.Bind(wx.EVT_CLOSE, self.OnClose)
     self.slider = wx.Slider(self, -1, value,
              self.button.slider_min, self.button.slider_max,
-             (0, 0), (w/2, height), wx.SL_VERTICAL|wx.SL_INVERSE)
+             (0, 0), (old_div(w,2), height), wx.SL_VERTICAL|wx.SL_INVERSE)
     self.slider.Bind(wx.EVT_SCROLL, self.OnSlider)
     if self.button.display:
       value = float(value) / self.button.slider_max
@@ -853,7 +859,7 @@ class QuiskCycleCheckbutton(QuiskCheckbutton):
     QuiskButtons.DrawLabel(self, dc, width, height, dx, dy)
     self.DrawGlyphCycle(dc, width, height)
 
-class RadioButtonGroup:
+class RadioButtonGroup(object):
   """This class encapsulates a group of radio buttons.  This class is not a button!
 
   The "labels" is a list of labels for the toggle buttons.  An item
@@ -950,7 +956,7 @@ class _PopWindow(wx.PopupWindow):
     self.SetSize((x, height + 2 * y))
     self.panel.SetSize((x, height + 2 * y))
 
-class RadioBtnPopup:
+class RadioBtnPopup(object):
   """This class contains a button that pops up a row of radio buttons"""
   def __init__(self, parent, command, in_labels, default):
     self.parent = parent
@@ -967,7 +973,7 @@ class RadioBtnPopup:
     self.RbDialog.Hide()
     self.pop_control = wx.BoxSizer(wx.HORIZONTAL)
     self.first_button = QuiskPushbutton(parent, self.OnFirstButton, labels[0], text_color=conf.color_popchoice)
-    self.first_button.decoration = unichr(0x21D2)
+    self.first_button.decoration = chr(0x21D2)
     self.second_button = QuiskBitmapButton(parent, self.OnSecondButton, _bitmap_menupop, use_right=True)
     self.pop_control.Add(self.first_button, 1, flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL)
     self.pop_control.Add(self.second_button, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
@@ -1102,8 +1108,8 @@ class FreqSetter(wx.TextCtrl):
     w, h = b.GetSizeTuple()
     self.end_pos = (x + w, y + h)
     b.Bind(wx.EVT_SPIN, self.OnSpin)	# The spin button frequencies are in kHz
-    b.SetMin(fmin / 1000)
-    b.SetMax(fmax / 1000)
+    b.SetMin(old_div(fmin, 1000))
+    b.SetMax(old_div(fmax, 1000))
     self.SetValue(freq)
   def OnText(self, event):
     self.SetBackgroundColour('pink')
@@ -1130,7 +1136,7 @@ class FreqSetter(wx.TextCtrl):
       freq = self.fmin
     elif freq > self.fmax:
       freq = self.fmax
-    self.butn.SetValue(freq / 1000)
+    self.butn.SetValue(old_div(freq, 1000))
     txt = FreqFormatter(freq)
     wx.TextCtrl.SetValue(self, txt)
     self.SetBackgroundColour(conf.color_entry)

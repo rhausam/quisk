@@ -19,7 +19,8 @@
 # and that class will be used instead of a hardware file.  This is recommended
 # only for simple hardware needs.  The class should start the same as above.
 
-class Hardware:
+from builtins import object
+class Hardware(object):
   def __init__(self, app, conf):
     self.application = app			# Application instance (to provide attributes)
     self.conf = conf				# Config file module

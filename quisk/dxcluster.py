@@ -1,12 +1,15 @@
 from __future__ import absolute_import
 # This code was contributed by Christof, DJ4CM.  Many Thanks!!
 
+from builtins import str
+from builtins import range
+from builtins import object
 import threading
 import time
 import telnetlib
 from . import quisk_conf_defaults as conf
 
-class DxEntry():
+class DxEntry(object):
   def __init__(self):
     self.info = []
     

@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+from builtins import range
 import ctypes, ctypes.util
 
 class PaDeviceInfo (ctypes.Structure):

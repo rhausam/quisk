@@ -1,7 +1,12 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import sys, wx, wx.lib, wx.combo, os, re, pickle, traceback, json
 from wx.lib.scrolledpanel import ScrolledPanel
 from types import *
@@ -23,7 +28,7 @@ from . import _quisk as QS
 # local_conf is the single instance of class Configuration
 
 
-class Configuration:
+class Configuration(object):
   def __init__(self, app, AskMe):	# Called first
     global application, local_conf, Settings, noname_enable, platform_ignore, platform_accept
     Settings = ["ConfigFileRadio", "ConfigFileRadio", [], []]
@@ -80,7 +85,7 @@ class Configuration:
       radio_dict["use_rx_udp"] = '0'
     # fill in conf from our configuration data; convert text items to Python objects
     errors = ''
-    for k, v in radio_dict.items():
+    for k, v in list(radio_dict.items()):
       if k == 'favorites_file_path':	# A null string is equivalent to "not entered"
         if not v.strip():
           continue
@@ -544,7 +549,7 @@ class ListBoxComboPopup(wx.ListBox, wx.combo.ComboPopup):
     return ''
   def GetAdjustedSize(self, minWidth, prefHeight, maxHeight):
     chary = self.lbox.GetCharHeight()
-    return (minWidth, chary * len(self.choices) * 15 / 10 + chary)
+    return (minWidth, old_div(chary * len(self.choices) * 15, 10) + chary)
   def OnLeftDown(self, event):
     event.Skip()
     self.Dismiss()
@@ -566,7 +571,7 @@ class BaseWindow(ScrolledPanel):
     self.row = 1
     self.charx = self.GetCharWidth()
     self.chary = self.GetCharHeight()
-    self.quisk_height = self.chary * 14 / 10
+    self.quisk_height = old_div(self.chary * 14, 10)
     # GBS
     self.gbs = wx.GridBagSizer(2, 2)
     self.gbs.SetEmptyCellSize((self.charx, self.charx))
@@ -692,7 +697,7 @@ class BaseWindow(ScrolledPanel):
         print ("Failure to set value for", text, value, choices)
     self.gbs.Add(cb, (self.row, col), span=(1, span_combo),
        flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.RIGHT,
-       border=self.charx*2/10)
+       border=old_div(self.charx*2,10))
     col += span_combo
     btn = wx.Button(self, -1, "..")
     btn.quisk_help_text = help_text
@@ -1234,11 +1239,11 @@ class RadioBands(BaseWindow):		# The Bands page in the second-level notebook for
         band_labels[i] = band_labels[i][0]
     band_edge = radio_dict['BandEdge']
     # band_list is a list of all known bands
-    band_list = band_edge.keys()
+    band_list = list(band_edge.keys())
     if local_conf.ReceiverHasName(radio_type, 'tx_level'):
       tx_level = self.GetValue('tx_level', radio_dict)
       radio_dict['tx_level'] = tx_level     # Make sure the dictionary is in radio_dict
-      for band in tx_level.keys():
+      for band in list(tx_level.keys()):
         if band is None:	# Special band None means the default
           continue
         if band not in band_list:
@@ -1251,7 +1256,7 @@ class RadioBands(BaseWindow):		# The Bands page in the second-level notebook for
       transverter_offset = {}
       radio_dict['bandTransverterOffset'] = transverter_offset     # Make sure the dictionary is in radio_dict
     else:
-      for band in transverter_offset.keys():
+      for band in list(transverter_offset.keys()):
         if band not in band_list:
           band_list.append(band)
     try:
@@ -1259,7 +1264,7 @@ class RadioBands(BaseWindow):		# The Bands page in the second-level notebook for
     except:
       hiqsdr_bus = None
     else:
-      for band in hiqsdr_bus.keys():
+      for band in list(hiqsdr_bus.keys()):
         if band not in band_list:
           band_list.append(band)
     try:
@@ -1267,7 +1272,7 @@ class RadioBands(BaseWindow):		# The Bands page in the second-level notebook for
     except:
       hermes_bus = None
     else:
-      for band in hermes_bus.keys():
+      for band in list(hermes_bus.keys()):
         if band not in band_list:
           band_list.append(band)
     band_list.sort(self.SortCmp)
