@@ -12,6 +12,7 @@ This can also be installed as a package and run as quisk_vna.main().
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import sys, os
 os.chdir(os.path.normpath(os.path.dirname(__file__)))
@@ -21,10 +22,10 @@ if sys.path[0] != "'.'":		# Make sure the current working directory is on path
 import wx, wx.html, wx.lib.buttons, wx.lib.stattext, wx.lib.colourdb
 import math, cmath, time, traceback, string, pickle
 import threading, webbrowser
-import _quisk as QS
+from . import _quisk as QS
 from types import *
-from quisk_widgets import *
-import configure
+from .quisk_widgets import *
+from . import configure
 
 DEBUG = 0
 
@@ -835,11 +836,11 @@ class App(wx.App):
   def OnInit(self):
     """Perform most initialization of the app here (called by wxPython on startup)."""
     wx.lib.colourdb.updateColourDB()	# Add additional color names
-    import quisk_widgets		# quisk_widgets needs the application object
+    from . import quisk_widgets		# quisk_widgets needs the application object
     quisk_widgets.application = self
     del quisk_widgets
     global conf		# conf is the module for all configuration data
-    import quisk_conf_defaults as conf
+    from . import quisk_conf_defaults as conf
     setattr(conf, 'config_file_path', ConfigPath)
     setattr(conf, 'DefaultConfigDir', DefaultConfigDir)
     if os.path.isfile(ConfigPath):	# See if the user has a config file

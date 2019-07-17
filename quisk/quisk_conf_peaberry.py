@@ -1,5 +1,6 @@
-from softrock import hardware_usb_new as quisk_hardware
-from softrock import widgets_tx as quisk_widgets
+from __future__ import absolute_import
+from .softrock import hardware_usb_new as quisk_hardware
+from .softrock import widgets_tx as quisk_widgets
 
 si570_direct_control = True
 si570_xtal_freq = 114211833

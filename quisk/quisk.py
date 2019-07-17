@@ -12,6 +12,7 @@ This can also be installed as a package and run as quisk.main().
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 # Change to the directory of quisk.py.  This is necessary to import Quisk packages
 # and to load other extension modules that link against _quisk.so.  It also helps to
@@ -31,12 +32,12 @@ if sys.version_info[0] == 3:	# Python3
   from xmlrpc.client import ServerProxy
 else:				# Python version 2.x
   from xmlrpclib import ServerProxy
-import _quisk as QS
+from . import _quisk as QS
 from types import *
-from quisk_widgets import *
-from filters import Filters
-import dxcluster
-import configure
+from .quisk_widgets import *
+from .filters import Filters
+from . import dxcluster
+from . import configure
 
 # Fldigi XML-RPC control opens a local socket.  If socket.setdefaulttimeout() is not
 # called, the timeout on Linux is zero (1 msec) and on Windows is 2 seconds.  So we
@@ -3054,11 +3055,11 @@ class App(wx.App):
   def OnInit(self):
     """Perform most initialization of the app here (called by wxPython on startup)."""
     wx.lib.colourdb.updateColourDB()	# Add additional color names
-    import quisk_widgets		# quisk_widgets needs the application object
+    from . import quisk_widgets		# quisk_widgets needs the application object
     quisk_widgets.application = self
     del quisk_widgets
     global conf		# conf is the module for all configuration data
-    import quisk_conf_defaults as conf
+    from . import quisk_conf_defaults as conf
     setattr(conf, 'config_file_path', ConfigPath)
     setattr(conf, 'DefaultConfigDir', DefaultConfigDir)
     if os.path.isfile(ConfigPath):	# See if the user has a config file
@@ -3593,7 +3594,7 @@ The new code supports multiple corrections per band.""")
     self.smeter_usage = "audio"
     QS.measure_audio(5)
   def MakeButtons(self, frame, gbs):
-    from quisk_widgets import button_text_width
+    from .quisk_widgets import button_text_width
     margin = button_text_width
     # Make one or two sliders on the left
     self.sliderVol = SliderBoxV(frame, 'Vol', self.volumeAudio, 1000, self.ChangeVolume)
@@ -5112,7 +5113,7 @@ The new code supports multiple corrections per band.""")
         rdict = self.config_screen.favorites.RepeaterDict
         freq = self.txFreq + self.VFO
         freq = ((freq + 500) / 1000) * 1000
-        if rdict.has_key(freq):
+        if freq in rdict:
           offset, tone = rdict[freq]
           QS.set_ctcss(tone)
           Hardware.RepeaterOffset(offset)

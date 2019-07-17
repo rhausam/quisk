@@ -10,13 +10,14 @@
 # These are the attributes we watch:  Rx frequency, mode
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 DEBUG = 0
 
 import socket, time, traceback
-import _quisk as QS
+from . import _quisk as QS
 
-from quisk_hardware_model import Hardware as BaseHardware
+from .quisk_hardware_model import Hardware as BaseHardware
 
 class Hardware(BaseHardware):
   def __init__(self, app, conf):

@@ -1,11 +1,12 @@
+from __future__ import absolute_import
 # These are Quisk widgets
 
 import sys, re
 import wx, wx.lib.buttons, wx.lib.stattext
 from types import *
 # The main script will alter quisk_conf_defaults to include the user's config file.
-import quisk_conf_defaults as conf
-import _quisk as QS
+from . import quisk_conf_defaults as conf
+from . import _quisk as QS
 
 def MakeWidgetGlobals():
   global button_font, button_bezel, button_width, button_height, button_text_width, button_text_height

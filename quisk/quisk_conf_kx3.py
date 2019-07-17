@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Please do not change this configuration file for Quisk.  Copy it to
 # your own config file and make changes there.
 #
@@ -19,7 +20,7 @@ else:
   data_poll_usec = 5000
 
 # Use the hamlib hardware module to talk to the KX3
-from quisk_hardware_hamlib import Hardware as BaseHardware
+from .quisk_hardware_hamlib import Hardware as BaseHardware
 
 class Hardware(BaseHardware):
   def __init__(self, app, conf):

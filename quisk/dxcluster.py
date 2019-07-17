@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 # This code was contributed by Christof, DJ4CM.  Many Thanks!!
 
 import threading
 import time
 import telnetlib
-import quisk_conf_defaults as conf
+from . import quisk_conf_defaults as conf
 
 class DxEntry():
   def __init__(self):

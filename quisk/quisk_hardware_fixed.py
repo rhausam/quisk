@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Please do not change this hardware control module for Quisk.
 # This hardware module is for receivers with a fixed VFO, such as
 # the SoftRock.  Change your VFO frequency below.
@@ -6,7 +7,7 @@
 # import quisk_hardware_fixed as quisk_hardware
 # See quisk_hardware_model.py for documentation.
 
-from quisk_hardware_model import Hardware as BaseHardware
+from .quisk_hardware_model import Hardware as BaseHardware
 
 class Hardware(BaseHardware):
   def __init__(self, app, conf):

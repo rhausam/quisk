@@ -1,12 +1,13 @@
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import sys, wx, wx.lib, wx.combo, os, re, pickle, traceback, json
 from wx.lib.scrolledpanel import ScrolledPanel
 from types import *
 # Quisk will alter quisk_conf_defaults to include the user's config file.
-import quisk_conf_defaults as conf
-import _quisk as QS
+from . import quisk_conf_defaults as conf
+from . import _quisk as QS
 
 # Settings is [
 #   0: radio_requested, a string radio name or "Ask me" or "ConfigFileRadio"
@@ -150,12 +151,12 @@ class Configuration:
       path = 'quisk_hardware_model.py'
     dct = {}
     dct.update(conf.__dict__)		# make items from conf available
-    if dct.has_key("Hardware"):
+    if "Hardware" in dct:
       del dct["Hardware"]
-    if dct.has_key('quisk_hardware'):
+    if 'quisk_hardware' in dct:
       del dct["quisk_hardware"]
     exec(compile(open(path).read(), path, 'exec'), dct)
-    if dct.has_key("Hardware"):
+    if "Hardware" in dct:
       application.Hardware = dct['Hardware'](application, conf)
       return True
     return False
@@ -196,7 +197,7 @@ class Configuration:
       dct = {}
       dct.update(conf.__dict__)		# make items from conf available
       exec(compile(open(path).read(), path, 'exec'), dct)
-      if dct.has_key("BottomWidgets"):
+      if "BottomWidgets" in dct:
         app.bottom_widgets = dct['BottomWidgets'](app, hardware, conf, frame, gbs, vertBox)
     return True
   def OnPageChanging(self, event):
@@ -322,8 +323,8 @@ class Configuration:
       del Settings[2][index]
       del Settings[3][index]
     for sdict in Settings[3]:		# Python None is saved as "null"
-      if sdict.has_key("tx_level"):
-        if sdict["tx_level"].has_key("null"):
+      if "tx_level" in sdict:
+        if "null" in sdict["tx_level"]:
           v = sdict["tx_level"]["null"]
           sdict["tx_level"][None] = v
           del sdict["tx_level"]["null"]
@@ -392,7 +393,7 @@ class Configuration:
         dspl = args[0].strip()
         fmt = args[1].strip()
         value_list = []
-        if self.format4name.has_key(data_name):
+        if data_name in self.format4name:
           if self.format4name[data_name] != fmt:
             print ("Inconsistent format for", data_name, self.format4name[data_name], fmt)
         else:
@@ -1484,7 +1485,7 @@ class RadioBands(BaseWindow):		# The Bands page in the second-level notebook for
     value = ctrl.GetValue()
     value = value.strip()
     if not value:
-      if dct.has_key(band):
+      if band in dct:
         del dct[band]
         local_conf.settings_changed = True
     elif self.FormatOK(value, 'inte'):

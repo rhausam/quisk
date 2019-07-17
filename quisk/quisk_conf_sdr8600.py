@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # These are the configuration parameters for receiving the
 # 10.7 MHz IF output of the AOR AR8600 receiver with the
 # SDR-IQ by RfSpace.  This results in a 100 kHz to 3 GHz
@@ -8,7 +9,7 @@
 # See quisk_conf_defaults.py for more information.
 
 # Use this hardware module to control the AR8600 and SDR-IQ
-import quisk_hardware_sdr8600 as quisk_hardware
+from . import quisk_hardware_sdr8600 as quisk_hardware
 
 # Start in FM mode
 default_mode = 'FM'

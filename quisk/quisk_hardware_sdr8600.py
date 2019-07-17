@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Please do not change this hardware control module for Quisk.  Instead copy
 # it to your own quisk_hardware.py and make changes there.
 # See quisk_hardware_model.py for documentation.
@@ -10,12 +11,12 @@
 #        different frequency.
 
 import time
-import _quisk as QS
-from sdriqpkg import sdriq
+from . import _quisk as QS
+from .sdriqpkg import sdriq
 import serial			# From the pyserial package
 
 # Use the SDR-IQ hardware as the base class
-from sdriqpkg import quisk_hardware as SdriqHardware
+from .sdriqpkg import quisk_hardware as SdriqHardware
 BaseHardware = SdriqHardware.Hardware
 
 class Hardware(BaseHardware):

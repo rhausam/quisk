@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #  ** This is the file quisk_conf_defaults.py which contains defaults for Quisk. **
 #  
 # Please do not change this configuration file quisk_conf_defaults.py.
@@ -35,7 +36,7 @@ import wx
 
 # Import the default Hardware module.  You can import a different module in
 # your configuration file.
-import quisk_hardware_model as quisk_hardware
+from . import quisk_hardware_model as quisk_hardware
 
 # Module for additional widgets (advanced usage).  See n2adr/quisk_widgets.py for an example.
 # import n2adr.quisk_widgets as quisk_widgets
