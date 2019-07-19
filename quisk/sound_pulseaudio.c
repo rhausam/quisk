@@ -819,18 +819,18 @@ static void source_sink(const char * name, const char * descr, pa_proplist * pro
 
 	pytup = PyTuple_New(3);
 	PyList_Append(pylist, pytup);
-	PyTuple_SET_ITEM(pytup, 0, PyString_FromString(name));
-	PyTuple_SET_ITEM(pytup, 1, PyString_FromString(descr));
+	PyTuple_SET_ITEM(pytup, 0, PyBytes_FromString(name));
+	PyTuple_SET_ITEM(pytup, 1, PyBytes_FromString(descr));
 	value = pa_proplist_gets(props, "device.api");
     
 	if (value && ! strcmp(value, "alsa")) {
 		snprintf(buf300, 300, "%s %s (hw:%s,%s)", pa_proplist_gets(props, "alsa.card_name"), pa_proplist_gets(props, "alsa.name"),
 			 pa_proplist_gets(props, "alsa.card"), pa_proplist_gets(props, "alsa.device"));
 
-		PyTuple_SET_ITEM(pytup, 2, PyString_FromString(buf300));
+		PyTuple_SET_ITEM(pytup, 2, PyBytes_FromString(buf300));
 	}
 	else {
-		PyTuple_SET_ITEM(pytup, 2, PyString_FromString(""));
+		PyTuple_SET_ITEM(pytup, 2, PyBytes_FromString(""));
 	}
 }
 

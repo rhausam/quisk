@@ -7,7 +7,7 @@ from builtins import object
 import threading
 import time
 import telnetlib
-from . import quisk_conf_defaults as conf
+import quisk_conf_defaults as conf
 
 class DxEntry(object):
   def __init__(self):

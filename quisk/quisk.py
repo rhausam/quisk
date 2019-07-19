@@ -30,8 +30,8 @@ os.chdir(os.path.normpath(os.path.dirname(__file__)))
 if sys.path[0] != "'.'":		# Make sure the current working directory is on path
   sys.path.insert(0, '.')
 
-import wxversion				# Thanks to Mario, DH5YM
-wxversion.ensureMinimal('2.8')
+#import wxversion				# Thanks to Mario, DH5YM
+#wxversion.ensureMinimal('2.8')
 
 import wx, wx.html, wx.lib.buttons, wx.lib.stattext, wx.lib.colourdb, wx.grid, wx.richtext
 import math, cmath, time, traceback, string
@@ -40,12 +40,13 @@ if sys.version_info[0] == 3:	# Python3
   from xmlrpc.client import ServerProxy
 else:				# Python version 2.x
   from xmlrpc.client import ServerProxy
-from . import _quisk as QS
+#from . import _quisk as QS
+import _quisk as QS
 from types import *
-from .quisk_widgets import *
-from .filters import Filters
-from . import dxcluster
-from . import configure
+from quisk_widgets import *
+from filters import Filters
+import dxcluster
+import configure
 
 # Fldigi XML-RPC control opens a local socket.  If socket.setdefaulttimeout() is not
 # called, the timeout on Linux is zero (1 msec) and on Windows is 2 seconds.  So we
@@ -495,7 +496,7 @@ class ConfigScreen(wx.Panel):
     notebook.tfg_color = va.colFg	# use for text foreground
     notebook.bg_color = va.colBg
     font = wx.Font(conf.config_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     notebook.SetFont(font)
     sizer = wx.BoxSizer()
     sizer.Add(notebook, 1, wx.EXPAND)
@@ -557,7 +558,7 @@ class ConfigStatus(wx.ScrolledWindow):
     self.err_msg = "No response"
     self.msg1 = ""
     self.font = wx.Font(conf.status_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     charx = self.charx = self.GetCharWidth()
     chary = self.chary = self.GetCharHeight()
@@ -616,7 +617,7 @@ class ConfigStatus(wx.ScrolledWindow):
   def InitBitmap(self):		# Initial construction of bitmap
     self.mem_height = application.screen_height
     self.mem_width = application.screen_width
-    self.bitmap = wx.EmptyBitmap(self.mem_width, self.mem_height)
+    self.bitmap = wx.Bitmap(self.mem_width, self.mem_height)
     self.mem_dc = wx.MemoryDC()
     self.mem_rect = wx.Rect(0, 0, self.mem_width, self.mem_height)
     self.mem_dc.SelectObject(self.bitmap)
@@ -691,7 +692,7 @@ class ConfigConfig(wx.ScrolledWindow):
     wx.ScrolledWindow.__init__(self, parent)
     self.width = width
     self.font = wx.Font(conf.config_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     self.charx = charx = self.GetCharWidth()
     self.chary = chary = self.GetCharHeight()
@@ -702,12 +703,12 @@ class ConfigConfig(wx.ScrolledWindow):
     # Receive phase
     rx = wx.StaticText(self, -1, "Adjust receive amplitude and phase")
     tx = wx.StaticText(self, -1, "Adjust transmit amplitude and phase")
-    x1, y1 = tx.GetSizeTuple()
+    x1, y1 = tx.GetSize()
     self.rx_phase = ctrl = wx.Button(self, -1, "Rx Phase...")
     self.Bind(wx.EVT_BUTTON, self.OnBtnPhase, ctrl)
     if not conf.name_of_sound_capt:
       ctrl.Enable(0)
-    x2, y2 = ctrl.GetSizeTuple()
+    x2, y2 = ctrl.GetSize()
     tab1 = tab0 + x1 + charx * 2
     tab2 = tab1 + x2
     tab3 = tab2 + charx * 8
@@ -760,7 +761,7 @@ class ConfigConfig(wx.ScrolledWindow):
     # File for recording speaker audio
     b = wx.Button(self, -1, "File...", pos=(tab3, self.y - self.offset))
     self.Bind(wx.EVT_BUTTON, self.OnBtnFileAudioRec, b)
-    x3, y3 = b.GetSizeTuple()
+    x3, y3 = b.GetSize()
     tab4 = tab3 + x3 + charx
     self.static_frec_text = "Record Rx audio to WAV file "
     self.static_frec_path = conf.file_name_audio
@@ -857,7 +858,7 @@ class ConfigSound(wx.ScrolledWindow):
     self.dev_capt, self.dev_play = QS.sound_devices()
     self.tfg_color = parent.tfg_color
     self.font = wx.Font(conf.config_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     self.charx = self.GetCharWidth()
     self.chary = self.GetCharHeight()
@@ -911,16 +912,16 @@ class ConfigFavorites(wx.grid.Grid):
     self.changed = False
     self.RepeaterDict = {}
     font = wx.Font(conf.favorites_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_BOLD, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_BOLD, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(font)
     self.SetLabelFont(font)
     font = wx.Font(conf.favorites_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetDefaultCellFont(font)
     self.SetDefaultRowSize(self.GetCharHeight()+3)
     self.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.OnRightClickLabel)
     self.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnLeftClickLabel)
-    self.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnChange)
+    self.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnChange)
     self.Bind(wx.grid.EVT_GRID_LABEL_LEFT_DCLICK, self.OnLeftDClick)
     self.CreateGrid(0, 6)
     self.EnableDragRowSize(False)
@@ -1132,7 +1133,7 @@ class ConfigTxAudio(wx.ScrolledWindow):
     wx.ScrolledWindow.__init__(self, parent)
     self.width = width
     self.font = wx.Font(conf.config_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     self.charx = charx = self.GetCharWidth()
     self.chary = chary = self.GetCharHeight()
@@ -1143,13 +1144,13 @@ class ConfigTxAudio(wx.ScrolledWindow):
     t = "This is a test screen for transmit audio.  SSB, AM and FM have separate settings."
     wx.StaticText(self, -1, t, pos=(tab0, self.y))
     self.btn_record = wx.lib.buttons.GenToggleButton(self, -1, "Record")
-    x2, y2 = self.btn_record.GetSizeTuple()
+    x2, y2 = self.btn_record.GetSize()
     self.dy = y2 * 12 // 10
     self.offset = (y2 - chary) // 2
     self.y += self.dy
     # Record and Playback
     ctl = wx.StaticText(self, -1, "Listen to transmit audio", pos=(tab0, self.y))
-    x1, y1 = ctl.GetSizeTuple()
+    x1, y1 = ctl.GetSize()
     x = tab0 + x1 + charx * 3
     y = self.y - self.offset
     self.btn_record.SetPosition((x, y))
@@ -1224,14 +1225,14 @@ class FilterDisplay(object):
     self.tuningPenTx = wx.Pen(conf.color_txline, 1)
     self.tuningPenRx = wx.Pen(conf.color_rxline, 1)
     self.max_height = application.screen_height
-    bitmap = wx.EmptyBitmap(graph_width, self.max_height)
+    bitmap = wx.Bitmap(graph_width, self.max_height)
     self.fltr_disp_tx_dc = wx.MemoryDC()
     self.fltr_disp_tx_dc.SelectObject(bitmap)
     br = wx.Brush(conf.color_bandwidth, wx.SOLID)
     self.fltr_disp_tx_dc.SetBackground(br)
     self.fltr_disp_tx_dc.SetPen(self.tuningPenTx)
     self.fltr_disp_tx_dc.DrawLine(0, 0, 0, self.max_height)
-    bitmap = wx.EmptyBitmap(graph_width, self.max_height)
+    bitmap = wx.Bitmap(graph_width, self.max_height)
     self.fltr_disp_rx_dc = wx.MemoryDC()
     self.fltr_disp_rx_dc.SelectObject(bitmap)
     br = wx.Brush(conf.color_bandwidth, wx.SOLID)
@@ -1295,7 +1296,7 @@ class GraphDisplay(wx.Window):
     self.backgroundBrush = wx.Brush(self.GetBackgroundColour())
     self.horizPen = wx.Pen(conf.color_gl, 1, wx.SOLID)
     self.font = wx.Font(conf.graph_msg_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     if sys.platform == 'win32':
       self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
@@ -1362,7 +1363,8 @@ class GraphDisplay(wx.Window):
       xa = min(xa, x)
       xb = max(xb, x + sz)
     dc.SetPen(wx.Pen(conf.color_graphticks,1))
-    dc.DrawLines(self.line[xa:xb])
+    if self.line[xa:xb]:
+      dc.DrawLines(self.line[xa:xb])
     dc.SetPen(self.horizPen)
     for y in self.parent.y_ticks:
       dc.DrawLine(xa, y, xb, y)	# y line
@@ -1396,7 +1398,7 @@ class GraphScreen(wx.Window):
     self.pen_tick = wx.Pen(conf.color_graphticks, 1)
     self.pen_label = wx.Pen(conf.color_graphlabels, 1)
     self.font = wx.Font(conf.graph_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     w = self.GetCharWidth() * 14 // 10
     h = self.GetCharHeight()
@@ -1774,7 +1776,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
     height = lines * (graph.GetCharHeight() + self.lineMargin)	# The height may be zero
     wx.Window.__init__(self, parent, size=(graph.width, height), style = wx.NO_BORDER)
     self.font = wx.Font(conf.graph_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     self.SetBackgroundColour(conf.color_graph)
     self.width = application.screen_width
@@ -1787,7 +1789,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
       self.stationWindow = wx.PopupWindow (parent)
       self.stationInfo = wx.richtext.RichTextCtrl(self.stationWindow)
       self.stationInfo.SetFont(wx.Font(conf.status_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface))
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface))
       self.stationWindow.Hide(); 
       self.firstStationInRange = None
       self.lastStationX = 0
@@ -1840,7 +1842,7 @@ class StationScreen(wx.Window):		# This code was contributed by Christof, DJ4CM.
               descr += '\n'
           self.stationList.append((entry.freq, conf.Xsym_stat_dx, entry.dx, '', descr))           
     # draw stations on graph
-    self.stationList.sort(cmp=None, key=None, reverse=False)
+    self.stationList.sort(key=None, reverse=False)
     lastX = []
     line = 0
     for i in range (0, self.lines):
@@ -1985,7 +1987,7 @@ class WaterfallDisplay(wx.Window):
     self.red = red
     self.green = green
     self.blue = blue
-    bmp = wx.EmptyBitmap(1, 1)
+    bmp = wx.Bitmap(1, 1)
     bmp.x_origin = 0
     self.bitmaps = [bmp] * application.screen_height
     if sys.platform == 'win32':
@@ -2486,7 +2488,7 @@ class MultiReceiverScreen(wx.SplitterWindow):
     self.SetSizeHints(self.width, -1, self.width)
     # Calculate control width
     rx_btn = QuiskPushbutton(self, None, "Rx 8....", style=wx.BU_EXACTFIT)
-    self.rx_btn_width, self.rx_btn_height = rx_btn.GetSizeTuple()
+    self.rx_btn_width, self.rx_btn_height = rx_btn.GetSize()
     self.rx_btn_width *= 2
     rx_btn.Destroy()
     del rx_btn
@@ -2619,7 +2621,7 @@ class ScopeScreen(wx.Window):
        size=(width, -1), style = wx.NO_BORDER)
     self.SetBackgroundColour(conf.color_graph)
     self.font = wx.Font(conf.config_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     self.SetFont(self.font)
     self.Bind(wx.EVT_SIZE, self.OnSize)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
@@ -2872,7 +2874,7 @@ class QAdjustPhase(wx.Frame):
     self.ampl_scale = float(conf.rx_max_amplitude_correct) / sl_max
     self.phase_scale = float(conf.rx_max_phase_correct) / sl_max
     font = wx.Font(conf.default_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-          wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+          wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     chary = self.GetCharHeight()
     y = chary * 3 // 10
     # Print available data points
@@ -3008,7 +3010,9 @@ class Spacer(wx.Window):
     wx.Window.__init__(self, parent, pos = (0, 0),
        size=(-1, 6), style = wx.NO_BORDER)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
-    r, g, b = parent.GetBackgroundColour().Get()
+    r = parent.GetBackgroundColour().Red()
+    g = parent.GetBackgroundColour().Green()
+    b = parent.GetBackgroundColour().Blue()
     dark = (r * 7 // 10, g * 7 // 10, b * 7 // 10)
     light = (r + (255 - r) * 5 // 10, g + (255 - g) * 5 // 10, b + (255 - b) * 5 // 10)
     self.dark_pen = wx.Pen(dark, 1, wx.SOLID)
@@ -3063,11 +3067,11 @@ class App(wx.App):
   def OnInit(self):
     """Perform most initialization of the app here (called by wxPython on startup)."""
     wx.lib.colourdb.updateColourDB()	# Add additional color names
-    from . import quisk_widgets		# quisk_widgets needs the application object
+    import quisk_widgets		# quisk_widgets needs the application object
     quisk_widgets.application = self
     del quisk_widgets
     global conf		# conf is the module for all configuration data
-    from . import quisk_conf_defaults as conf
+    import quisk_conf_defaults as conf
     setattr(conf, 'config_file_path', ConfigPath)
     setattr(conf, 'DefaultConfigDir', DefaultConfigDir)
     if os.path.isfile(ConfigPath):	# See if the user has a config file
@@ -3440,7 +3444,7 @@ The new code supports multiple corrections per band.""")
     if conf.window_height > 0:
       minh = maxh = self.height = conf.window_height
     self.main_frame.SetSizeHints(minw, minh, maxw, maxh)
-    self.main_frame.SetClientSizeWH(width, self.height)
+    self.main_frame.SetClientSize(width, self.height)
     if hasattr(Hardware, 'pre_open'):       # pre_open() is called before open()
       Hardware.pre_open()
     if self.local_conf.GetWidgets(self, Hardware, conf, frame, gbs, vertBox):
@@ -3602,7 +3606,7 @@ The new code supports multiple corrections per band.""")
     self.smeter_usage = "audio"
     QS.measure_audio(5)
   def MakeButtons(self, frame, gbs):
-    from .quisk_widgets import button_text_width
+    from quisk_widgets import button_text_width
     margin = button_text_width
     # Make one or two sliders on the left
     self.sliderVol = SliderBoxV(frame, 'Vol', self.volumeAudio, 1000, self.ChangeVolume)
@@ -3875,7 +3879,7 @@ The new code supports multiple corrections per band.""")
     # Frequency entry
     if conf.button_layout == 'Large screen':
       e = wx.TextCtrl(frame, -1, '', size=(10, bh), style=wx.TE_PROCESS_ENTER)
-      font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+      font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
       e.SetFont(font)
       e.SetBackgroundColour(conf.color_entry)
       e.SetForegroundColour(conf.color_entry_txt)
@@ -3889,7 +3893,8 @@ The new code supports multiple corrections per band.""")
     szr = wx.BoxSizer(wx.HORIZONTAL)
     b_smeter = szr
     szr.Add(self.smeter, 1, flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL)
-    szr.Add(b, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+#    szr.Add(b, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL)
+    szr.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL)
     self.smeter.TextCtrl.Bind(wx.EVT_RIGHT_DOWN, self.OnSmeterRightDown)
     self.smeter.TextCtrl.SetBackgroundColour(conf.color_freq)
     self.smeter.TextCtrl.SetForegroundColour(conf.color_freq_txt)

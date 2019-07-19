@@ -417,7 +417,7 @@ static int device_list(PyObject * py, snd_pcm_stream_t stream, char * name)
 			}
 			snprintf(buf100, 100, "%s %s (hw:%d,%d)", card_text, pcm_text, card, dev);
 			if (py) {		// add to list of devices
-				PyList_Append(py, PyString_FromString(buf100));
+				PyList_Append(py, PyBytes_FromString(buf100));
 			}
 			if (name) {		// return the "hw:" name
 				if (strstr(buf100, name)) {
@@ -929,8 +929,8 @@ void quisk_mixer_set(char * card_name, int numid, PyObject * value, char * err_m
 				tmp = (long)(imin + (imax - imin) * PyFloat_AsDouble(value) + 0.4);
 				snd_ctl_elem_value_set_integer(control, idx, tmp);
 			}
-			else if(PyInt_Check(value)) {
-				tmp = PyInt_AsLong(value);
+			else if(PyLong_Check(value)) {
+				tmp = PyLong_AsLong(value);
 				snd_ctl_elem_value_set_integer(control, idx, tmp);
 			}
 			else {
@@ -944,8 +944,8 @@ void quisk_mixer_set(char * card_name, int numid, PyObject * value, char * err_m
 				tmp = (long)(imin + (imax - imin) * PyFloat_AsDouble(value) + 0.4);
 				snd_ctl_elem_value_set_integer64(control, idx, tmp);
 			}
-			else if(PyInt_Check(value)) {
-				tmp = PyInt_AsLong(value);
+			else if(PyLong_Check(value)) {
+				tmp = PyLong_AsLong(value);
 				snd_ctl_elem_value_set_integer64(control, idx, tmp);
 			}
 			else {
@@ -953,8 +953,8 @@ void quisk_mixer_set(char * card_name, int numid, PyObject * value, char * err_m
 			}
 			break;
 		case SND_CTL_ELEM_TYPE_ENUMERATED:
-			if(PyInt_Check(value)) {
-				tmp = PyInt_AsLong(value);
+			if(PyLong_Check(value)) {
+				tmp = PyLong_AsLong(value);
 				snd_ctl_elem_value_set_enumerated(control, idx, (unsigned int)tmp);
 			}
 			else {

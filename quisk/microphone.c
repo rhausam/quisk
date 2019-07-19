@@ -1152,7 +1152,7 @@ PyObject * quisk_is_vox(PyObject * self, PyObject * args)
 {	/* return the VOX state */
 	if (!PyArg_ParseTuple (args, ""))
 		return NULL;
-	return PyInt_FromLong(is_vox);
+	return PyLong_FromLong(is_vox);
 }
 
 void quisk_close_mic(void)

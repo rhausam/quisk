@@ -825,7 +825,7 @@ static PyObject * open_samples(PyObject * self, PyObject * args)
 	quisk_sample_source(&quisk_start_sdriq, &quisk_stop_sdriq, &quisk_read_sdriq);
 //////////////
 	quisk_open_sdriq(name, buf, 128);		// SDR-IQ specific
-	return PyString_FromString(buf);		// return a string message
+	return PyBytes_FromString(buf);		// return a string message
 }
 
 // Miscellaneous functions needed by the SDR-IQ; called from the GUI thread as
@@ -872,15 +872,16 @@ static PyMethodDef QuiskMethods[] = {
 };
 
 // Initialization, and registration of public symbol "initsdriq":
-PyMODINIT_FUNC initsdriq (void)
+PyMODINIT_FUNC PyInit_sdriq (void)
 {
 	if (Py_InitModule ("sdriq", QuiskMethods) == NULL) {
 		printf("Py_InitModule failed!\n");
-		return;
+		return NULL;
 	}
 	// Import pointers to functions and variables from module _quisk
 	if (import_quisk_api()) {
 		printf("Failure to import pointers from _quisk\n");
-		return;		//Error
+		return NULL;		//Error
 	}
+	return moduleinit();
 }

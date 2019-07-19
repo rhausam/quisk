@@ -11,15 +11,15 @@ import sys, re
 import wx, wx.lib.buttons, wx.lib.stattext
 from types import *
 # The main script will alter quisk_conf_defaults to include the user's config file.
-from . import quisk_conf_defaults as conf
-from . import _quisk as QS
+import quisk_conf_defaults as conf
+import _quisk as QS
 
 def MakeWidgetGlobals():
   global button_font, button_bezel, button_width, button_height, button_text_width, button_text_height
   global _bitmap_menupop, _bitmap_sliderpop, _bitmap_cyclepop
   button_bezel = 3		# size of button bezel in pixels
   button_font = wx.Font(conf.button_font_size, wx.FONTFAMILY_SWISS, wx.NORMAL,
-           wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+           wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
   dc = wx.MemoryDC()
   dc.SetFont(button_font)
   button_text_width, button_text_height = dc.GetTextExtent('0')
@@ -28,7 +28,7 @@ def MakeWidgetGlobals():
   # Make a bitmap for the slider pop button
   height = button_text_height + 2	# button height less bezel
   width = height
-  _bitmap_sliderpop = wx.EmptyBitmap(height, height)
+  _bitmap_sliderpop = wx.Bitmap(height, height)
   dc.SelectObject(_bitmap_sliderpop)
   pen = wx.Pen(conf.color_enable, 1)
   dc.SetPen(pen)
@@ -64,7 +64,7 @@ def MakeWidgetGlobals():
   dc.DrawLine(x0 - 2, y0, x0 + 3, y0)
   dc.SelectObject(wx.NullBitmap)
   # Make a bitmap for the menu pop button
-  _bitmap_menupop = wx.EmptyBitmap(height, height)
+  _bitmap_menupop = wx.Bitmap(height, height)
   dc.SelectObject(_bitmap_menupop)
   dc.SetBackground(brush)
   dc.Clear()
@@ -76,7 +76,7 @@ def MakeWidgetGlobals():
     dc.DrawLine(x + 5, y + 1, width - 3, y + 1)
   dc.SelectObject(wx.NullBitmap)
   # Make a bitmap for the cycle button
-  _bitmap_cyclepop = wx.EmptyBitmap(height, height)
+  _bitmap_cyclepop = wx.Bitmap(height, height)
   dc.SelectObject(_bitmap_cyclepop)
   dc.SetBackground(brush)
   dc.SetFont(button_font)
@@ -111,7 +111,7 @@ class FrequencyDisplay(wx.lib.stattext.GenStaticText):
          style=wx.ALIGN_CENTER|wx.ST_NO_AUTORESIZE)
     border = 4
     for points in range(30, 6, -1):
-      font = wx.Font(points, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+      font = wx.Font(points, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
       self.SetFont(font)
       w, h = self.GetTextExtent('333 444 555 Hz')
       if w < width and h < height - border * 2:
@@ -265,7 +265,7 @@ class SliderBoxHH(SliderBoxH, wx.BoxSizer):
   def __init__(self, parent, text, init, themin, themax, handler, display):
     wx.BoxSizer.__init__(self, wx.HORIZONTAL)
     SliderBoxH.__init__(self, parent, text, init, themin, themax, handler, display, None, None)
-    #font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+    #font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     #self.text_ctrl.SetFont(font)
     self.Add(self.text_ctrl, 0, wx.ALIGN_CENTER)
     self.Add(self.slider, 1, wx.ALIGN_CENTER)
@@ -301,8 +301,10 @@ class SliderBoxV(wx.BoxSizer):
       self.width = max(w2, sw) + self.text_ctrl.GetCharWidth()
       self.text_ctrl.SetSizeHints(self.width, -1, self.width)
     self.text_ctrl.SetForegroundColour(parent.GetForegroundColour())
-    self.Add(self.text_ctrl, 0, wx.ALIGN_CENTER_VERTICAL)
-    self.Add(self.slider, 1, wx.ALIGN_CENTER_VERTICAL)
+#    self.Add(self.text_ctrl, 0, wx.ALIGN_CENTER_VERTICAL)
+    self.Add(self.text_ctrl, 0)
+#    self.Add(self.slider, 1, wx.ALIGN_CENTER_VERTICAL)
+    self.Add(self.slider, 1)
   def Change(self, event):
     event.Skip()
     self.text_ctrl.SetLabel(str(self.slider.GetValue()))
@@ -332,9 +334,9 @@ class _QuiskText1(wx.lib.stattext.GenStaticText):
     # Set decreasing point size until size_text fits in the space available
     for points in range(20, 6, -1):
       if self.fixed:
-        font = wx.Font(points, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+        font = wx.Font(points, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
       else:
-        font = wx.Font(points, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+        font = wx.Font(points, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
       dc.SetFont(font)
       w, h = dc.GetTextExtent(self.size_text)
       if w < width and h < height:
@@ -721,7 +723,8 @@ class WrapMenu(WrapControl):
     WrapControl.__init__(self)
     self.Add(button, 1, flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL)
     b = QuiskBitmapButton(button.GetParent(), self.OnPopButton, _bitmap_menupop)
-    self.Add(b, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
+#    self.Add(b, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
+    self.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
   def OnPopButton(self, event):
     if self.on_open:
       self.on_open(self.menu)
@@ -746,7 +749,8 @@ class WrapSlider(WrapControl):
     WrapControl.__init__(self)
     self.Add(button, 1, flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL)
     b = QuiskBitmapButton(button.GetParent(), self.OnPopButton, _bitmap_sliderpop)
-    self.Add(b, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
+#    self.Add(b, 0, flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
+    self.Add(b, 0, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
   def SetDual(self, dual):		# dual means separate slider values for on and off
     self.dual = dual
     if self.adjust:
@@ -871,7 +875,7 @@ class RadioButtonGroup(object):
     self.buttons = []
     self.button = None
     for text in labels:
-      if type(text) in (ListType, TupleType):
+      if type(text) in (list, tuple):
         b = QuiskCycleCheckbutton(parent, self.OnButton, text, is_radio=True)
         for t in text:
           if t == default and self.button is None:
@@ -1091,7 +1095,7 @@ class FreqSetter(wx.TextCtrl):
     self.fmin = fmin
     self.fmax = fmax
     self.command = command
-    self.font = wx.Font(16, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, face=conf.quisk_typeface)
+    self.font = wx.Font(16, wx.FONTFAMILY_SWISS, wx.NORMAL, wx.FONTWEIGHT_NORMAL, underline=False, faceName=conf.quisk_typeface)
     t = wx.StaticText(parent, -1, label, pos=(x, y))
     t.SetFont(self.font)
     freq_w, freq_h = t.GetTextExtent(" 662 000 000")

@@ -1,9 +1,9 @@
 
 all:
-	python setup.py build_ext --force --inplace
+	python3 setup.py build
 
 win:
-	C:/Python27/python.exe setup.py build_ext -c mingw32 --inplace --force
+	C:/Python27/python.exe setup.py build -c mingw32 --inplace --force
 
 winrun:
 	C:/Python27/python.exe quisk.py
@@ -18,4 +18,4 @@ winuninstall:
 	msiexec -x wix\\quisk.msi
 
 macports:
-	env ARCHFLAGS="-arch x86_64" python setup.py build_ext --force --inplace -D USE_MACPORTS
+	env ARCHFLAGS="-arch x86_64" python3 setup.py build -D USE_MACPORTS

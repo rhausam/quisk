@@ -432,7 +432,7 @@ static int device_list(PyObject * py, int input)
                 // found one
                 if (py) {
                     snprintf(buf100, 100, "%s", info->name);
-					PyList_Append(py, PyString_FromString(buf100));
+					PyList_Append(py, PyBytes_FromString(buf100));
                 } 
             }
         }
@@ -483,6 +483,7 @@ void quisk_mixer_set(char * card_name, int numid, PyObject * value, char * err_m
 }
 
 #if !defined USE_MACPORTS
+/*
 int  quisk_read_pulseaudio(struct sound_dev * dev, complex double * samp)
 {
 	return 0;
@@ -514,5 +515,6 @@ PyObject * quisk_pa_sound_devices(PyObject * self, PyObject * args)
 	PyList_Append(pylist, pyplay);
 	return pylist;
 }
+*/
 #endif
 #endif

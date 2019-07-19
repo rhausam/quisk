@@ -7,12 +7,12 @@ from builtins import str
 from builtins import range
 from past.utils import old_div
 from builtins import object
-import sys, wx, wx.lib, wx.combo, os, re, pickle, traceback, json
+import sys, wx, wx.lib, wx.adv, os, re, pickle, traceback, json
 from wx.lib.scrolledpanel import ScrolledPanel
 from types import *
 # Quisk will alter quisk_conf_defaults to include the user's config file.
-from . import quisk_conf_defaults as conf
-from . import _quisk as QS
+import quisk_conf_defaults as conf
+import _quisk as QS
 
 # Settings is [
 #   0: radio_requested, a string radio name or "Ask me" or "ConfigFileRadio"
@@ -171,9 +171,10 @@ class Configuration(object):
       typ = self.GuessType()
       radio_dict['hardware_file_type'] = typ
       all_data = []
-      all_data = all_data + self.GetReceiverData(typ)
+      if self.GetReceiverData(typ):
+        all_data = all_data + self.GetReceiverData(typ)
       for name, sdata in self.sections:
-        all_data = all_data + sdata
+        all_data = all_data + list(sdata)
       for data_name, text, fmt, help_text, values in all_data:
         data_name4 = data_name[0:4]
         if data_name4 == platform_ignore:
@@ -469,16 +470,16 @@ class RadioNotebook(wx.Notebook):	# The second-level notebook for each radio nam
     for page in self.pages:
       page.radio_name = new_name
 
-class ComboCtrl(wx.combo.ComboCtrl):
+class ComboCtrl(wx.ComboCtrl):
   def __init__(self, parent, value, choices, no_edit=False):
     self.value = value
     self.choices = choices[:]
     self.handler = None
     self.height = parent.quisk_height
     if no_edit:
-      wx.combo.ComboCtrl.__init__(self, parent, -1, style=wx.CB_READONLY)
+      wx.ComboCtrl.__init__(self, parent, -1, style=wx.CB_READONLY)
     else:
-      wx.combo.ComboCtrl.__init__(self, parent, -1, style=wx.TE_PROCESS_ENTER)
+      wx.ComboCtrl.__init__(self, parent, -1, style=wx.TE_PROCESS_ENTER)
       self.GetTextCtrl().Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
       self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
     self.ctrl = ListBoxComboPopup(choices, parent.font)
@@ -524,9 +525,9 @@ class ComboCtrl(wx.combo.ComboCtrl):
   def OnListbox(self):
     self.OnTextEnter()
 
-class ListBoxComboPopup(wx.ListBox, wx.combo.ComboPopup):
+class ListBoxComboPopup(wx.ListBox, wx.ComboPopup):
   def __init__(self, choices, font):
-    wx.combo.ComboPopup.__init__(self)
+    wx.ComboPopup.__init__(self)
     self.choices = choices
     self.font = font
     self.lbox = None

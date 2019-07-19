@@ -21,7 +21,7 @@ int QuiskGetConfigInt(const char * name, int deflt)
   }
   attr = PyObject_GetAttrString(quisk_pyConfig, name);
   if (attr) {
-    res = (int)PyInt_AsUnsignedLongMask(attr);  // This works for floats too!
+    res = (int)PyLong_AsUnsignedLongMask(attr);  // This works for floats too!
     Py_DECREF(attr);
     return res;		// success
   }
@@ -59,7 +59,7 @@ char * QuiskGetConfigString(const char * name, char * deflt)
     return deflt;
   attr = PyObject_GetAttrString(quisk_pyConfig, name);
   if (attr) {
-    res = PyString_AsString(attr);
+    res = PyBytes_AsString(attr);
     Py_DECREF(attr);
     if (res)
       return res;		// success

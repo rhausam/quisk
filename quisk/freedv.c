@@ -351,7 +351,7 @@ PyObject * quisk_freedv_get_rx_char(PyObject * self, PyObject * args)	// Called 
 
 	if (!PyArg_ParseTuple (args, ""))
 		return NULL;
-	txt = PyString_FromString(quisk_rx_msg);
+	txt = PyBytes_FromString(quisk_rx_msg);
 	quisk_rx_msg[0] = 0;
 	return txt;
 }
@@ -432,7 +432,7 @@ PyObject * quisk_freedv_open(PyObject * self, PyObject * args)	// Called from th
 {
 	if (!PyArg_ParseTuple (args, ""))
 		return NULL;
-	return PyInt_FromLong(OpenFreedv());
+	return PyLong_FromLong(OpenFreedv());
 }
 
 PyObject * quisk_freedv_close(PyObject * self, PyObject * args)	// Called from the GUI thread.
@@ -468,7 +468,7 @@ PyObject * quisk_freedv_set_options(PyObject * self, PyObject * args, PyObject *
 			requested_mode = mode;
 		}
 	}
-	return PyInt_FromLong(requested_mode);	// Return the mode
+	return PyLong_FromLong(requested_mode);	// Return the mode
 }
 
 PyObject * quisk_freedv_get_snr(PyObject * self, PyObject * args)	// Called from the GUI thread.
@@ -488,5 +488,5 @@ PyObject * quisk_freedv_get_version(PyObject * self, PyObject * args)	// Called 
 		return NULL;
 	if ( ! hLib)
 		GetAddrs();		// Get the entry points for funtions in the codec2 library
-	return PyInt_FromLong(freedv_version);
+	return PyLong_FromLong(freedv_version);
 }

@@ -182,6 +182,10 @@ static FILE * wavFp;			// File pointer for WAV file input
 static int wavPosSound;			// Current position for radio sound
 static int wavPosMic;			// Current position for microphone
 
+struct module_state {
+    PyObject *error;
+};
+
 #if SAMPLES_FROM_FILE
 static struct QuiskWav hWav;
 
@@ -1112,7 +1116,7 @@ static PyObject * set_record_state(PyObject * self, PyObject * args)
 		quisk_record_state = PLAY_FILE;
 		break;
 	}
-	return PyInt_FromLong(quisk_record_state != PLAYBACK && quisk_record_state != PLAY_FILE);
+	return PyLong_FromLong(quisk_record_state != PLAYBACK && quisk_record_state != PLAY_FILE);
 }
 
 void quisk_tmp_record(complex double * cSamples, int nSamples, double scale)		// save sound
@@ -1176,7 +1180,7 @@ static PyObject * open_file_play(PyObject * self, PyObject * args)
 	wavFp = fopen(fname, "rb");
 	if (!wavFp) {
 		printf("open_wav failed\n");
-		return PyInt_FromLong(1);
+		return PyLong_FromLong(1);
 	}
 	wavEnd = 0;
 	while (1) {
@@ -1200,9 +1204,9 @@ static PyObject * open_file_play(PyObject * self, PyObject * args)
 	if (!wavEnd) {		// Failure to find "data" record
 		fclose(wavFp);
 		wavFp = NULL;
-		return PyInt_FromLong(2);
+		return PyLong_FromLong(2);
 	}
-	return PyInt_FromLong(0);
+	return PyLong_FromLong(0);
 }
 
 void quisk_file_playback(complex double * cSamples, int nSamples, double volume)
@@ -2313,14 +2317,14 @@ static PyObject * get_squelch(PyObject * self, PyObject * args)
 
 	if (!PyArg_ParseTuple (args, "i", &freq))
 		return NULL;
-	return PyInt_FromLong(IsSquelch(freq));
+	return PyLong_FromLong(IsSquelch(freq));
 }
 
 static PyObject * get_overrange(PyObject * self, PyObject * args)
 {
 	if (!PyArg_ParseTuple (args, ""))
 		return NULL;
-	return PyInt_FromLong(quisk_get_overrange());
+	return PyLong_FromLong(quisk_get_overrange());
 }
 
 static PyObject * get_filter_rate(PyObject * self, PyObject * args)
@@ -2383,7 +2387,7 @@ static PyObject * get_filter_rate(PyObject * self, PyObject * args)
 		break;
 	}
 	//printf("Filter rate %d\n", filter_srate);
-	return PyInt_FromLong(filter_srate);
+	return PyLong_FromLong(filter_srate);
 }
 
 static PyObject * get_smeter(PyObject * self, PyObject * args)
@@ -2436,7 +2440,7 @@ static PyObject * open_key(PyObject * self, PyObject * args)
 	if (!PyArg_ParseTuple (args, "s", &name))
 		return NULL;
 
-	return PyInt_FromLong(quisk_open_key(name));
+	return PyLong_FromLong(quisk_open_key(name));
 }
 
 static void close_udp(void)
@@ -3122,7 +3126,7 @@ static PyObject * open_rx_udp(PyObject * self, PyObject * args)
 	wVersionRequested = MAKEWORD(2, 2);
 	if (WSAStartup(wVersionRequested, &wsaData) != 0) {
 		sprintf(buf, "Failed to initialize Winsock (WSAStartup)");
-		return PyString_FromString(buf);
+		return PyBytes_FromString(buf);
 	}
 	else {
 		cleanupWSA = 1;
@@ -3169,7 +3173,7 @@ static PyObject * open_rx_udp(PyObject * self, PyObject * args)
 	else {
 		sprintf(buf, "Failed to open socket");
 	}
-	return PyString_FromString(buf);
+	return PyBytes_FromString(buf);
 }
 
 static PyObject * open_sound(PyObject * self, PyObject * args)
@@ -3278,7 +3282,7 @@ static PyObject * read_sound(PyObject * self, PyObject * args)
 Py_BEGIN_ALLOW_THREADS
 	n = quisk_read_sound();
 Py_END_ALLOW_THREADS
-	return PyInt_FromLong(n);
+	return PyLong_FromLong(n);
 }
 
 static PyObject * start_sound(PyObject * self, PyObject * args)
@@ -3301,7 +3305,7 @@ static PyObject * mixer_set(PyObject * self, PyObject * args)
 		return NULL;
 
 	quisk_mixer_set(card_name, numid, value, err_msg, QUISK_SC_SIZE);
-	return PyString_FromString(err_msg);
+	return PyBytes_FromString(err_msg);
 }
 
 static PyObject * pc_to_hermes(PyObject * self, PyObject * args)
@@ -3497,7 +3501,7 @@ static PyObject * tx_hold_state(PyObject * self, PyObject * args)
 		return NULL;
 	if (i >= 0)		// arg < 0 is a Query for the current value
 		quiskTxHoldState = i;
-	return PyInt_FromLong(quiskTxHoldState);
+	return PyLong_FromLong(quiskTxHoldState);
 }
 
 static PyObject * set_transmit_mode(PyObject * self, PyObject * args)
@@ -3638,13 +3642,13 @@ static PyObject * get_multirx_graph(PyObject * self, PyObject * args)	// Called 
 			}
 		}
 		PyTuple_SetItem(retrn, 0, data);
-		PyTuple_SetItem(retrn, 1, PyInt_FromLong(multirx_fft_next_index));
+		PyTuple_SetItem(retrn, 1, PyLong_FromLong(multirx_fft_next_index));
 		multirx_fft_next_state = 2;			// This FFT is done.
 	}
 	else {
 		data = PyTuple_New(0);
 		PyTuple_SetItem(retrn, 0, data);
-		PyTuple_SetItem(retrn, 1, PyInt_FromLong(-1));
+		PyTuple_SetItem(retrn, 1, PyLong_FromLong(-1));
 	}
 	return retrn;
 }
@@ -4037,8 +4041,8 @@ static PyObject * Xdft(PyObject * pyseq, int inverse, int window)
 			pycx.real = PyFloat_AsDouble(obj);
 			pycx.imag = 0;
 		}
-		else if (PyInt_Check(obj)) {
-			pycx.real = PyInt_AsLong(obj);
+		else if (PyLong_Check(obj)) {
+			pycx.real = PyLong_AsLong(obj);
 			pycx.imag = 0;
 		}
 		else {
@@ -4096,7 +4100,7 @@ static PyObject * is_key_down(PyObject * self, PyObject * args)
 {
 	if (!PyArg_ParseTuple (args, ""))
 		return NULL;
-	return PyInt_FromLong(quisk_is_key_down());
+	return PyLong_FromLong(quisk_is_key_down());
 }
 
 static PyObject * idft(PyObject * self, PyObject * args)
@@ -4302,16 +4306,30 @@ static PyMethodDef QuiskMethods[] = {
 	{NULL, NULL, 0, NULL}		/* Sentinel */
 };
 
-PyMODINIT_FUNC init_quisk (void)
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_quisk",
+        NULL,
+        sizeof(struct module_state),
+        QuiskMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC PyInit__quisk (void)
 {
 	PyObject * m;
 	PyObject * c_api_object;
 	static void * Quisk_API[] = QUISK_API_INIT;
 
-	m = Py_InitModule ("_quisk", QuiskMethods);
+	m = PyModule_Create(&moduledef);
 	if (m == NULL) {
-		printf("Py_InitModule of _quisk failed!\n");
-		return;
+		printf("PyModule_Create of _quisk failed!\n");
+		return NULL;
 	}
 
 	QuiskError = PyErr_NewException ("quisk.error", NULL, NULL);
@@ -4330,5 +4348,6 @@ PyMODINIT_FUNC init_quisk (void)
        c_api_object = PyCapsule_New(Quisk_API, "_quisk.QUISK_C_API", NULL);
        if (c_api_object != NULL)
          PyModule_AddObject(m, "QUISK_C_API", c_api_object);
+		 return m;
 #endif
 }
